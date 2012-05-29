@@ -113,7 +113,11 @@ class mod_checklist_mod_form extends moodleform_mod {
 		$mform->setDefault('lockteachermarks', 0);
         $mform->setAdvanced('lockteachermarks');
         $mform->setHelpButton('lockteachermarks', array('lockteachermarks', get_string('lockteachermarks', 'checklist'), 'checklist'));
+//-------------------------------------------------------------------------------
 
+        $mform->addElement('header', 'oscesettings', get_string('oscesettings', 'checklist'));
+		$mform->addElement('select', 'osceallowed', get_string('osceallowed', 'checklist'), $ynoptions);
+        $mform->setDefault('osceallowed', 0);
 //-------------------------------------------------------------------------------
         // add standard elements, common to all modules
         $features = new stdClass;

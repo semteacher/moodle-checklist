@@ -111,6 +111,21 @@ $string['moveitemup'] = 'Переместить пункт вверх';
 
 $string['noitems'] = 'В контрольном списке нет пунктов';
 
+//TDMU-4 OSKI marks text
+$string['osce'] = 'Оценки за ОСКЭ';
+$string['oscesettings'] = 'Настройки ОСКЭ';
+$string['osceallowed'] = 'Включить оценки за ОСКЭ';
+$string['oscemarkundecided'] = 'Вы еще не сдавали этот навык ОСКЭ';
+$string['oscemarkfullalt'] = 'Вы выполнили этот навык ОСКЭ отлично';
+$string['oscemarkyhalfalt'] = 'Вы выполнили этот навык ОСКЭ удовлетворительно';
+$string['oscemarkfailalt'] = 'Вы не выполнили этот навык ОСКЭ!';
+$string['oscemarkfull'] = '1,0';
+$string['oscemarkhalf'] = '0,5';
+$string['oscemarkfail'] = '0,0';
+$string['oscemarksedit'] = 'Редактировать оценки';
+$string['oscemarksfor'] = 'Оценки за ОСКЭ для';
+$string['oscetoggledates'] = 'Показать/скрыть авторов и даті оценок за ОСКЭ';
+
 $string['optionalitem'] = 'Этот пункт необязательный';
 $string['optionalhide'] = 'Спрятать необязательные пункты';
 $string['optionalshow'] = 'Показать необязательные пункты';
@@ -119,10 +134,11 @@ $string['percentcomplete'] = 'Обязательные пункты';
 $string['percentcompleteall'] = 'Все пункты';
 $string['preview'] = 'Предварительный просмотр';
 $string['progress'] = 'Достижения';
+
 //TDMU - title for column select control
 $string['putchecksforvisible'] = 'Всем показанным студентам:';
 
-$string['report'] = 'Просмотреть достижения';
+$string['report'] = 'Просмотреть отметки';
 $string['reporttablesummary'] = 'Таблица показывает пункты контрольного списка, выполненные каждым студентом';
 
 $string['removeauto'] = 'Удалить пункты, которые соответствуют модулю курса';
@@ -150,8 +166,9 @@ $string['teacheralongsidecheck'] = 'Студенты і преподавател
 
 //TDMU: title for teacher name field
 $string['teacherwhocheckthis'] = 'Отметил';
+$string['teacherwhomarkosce'] = 'Поставил';
 
-$string['toggledates'] = 'Показать/скрыть автора и дату отметки';
+$string['toggledates'] = 'Показать/скрыть авторов и даты отметок';
 
 $string['theme'] = 'Тема оформления контрольного списка';
 
@@ -166,8 +183,8 @@ $string['viewall'] = 'Просмотреть всех студентов';
 $string['viewallcancel'] = 'Отменить';
 $string['viewallsave'] = 'Сохранить';
 
-$string['viewsinglereport'] = 'Просмотреть достижения этого пользователя';
-$string['viewsingleupdate'] = 'Обновить достижения этого пользователя';
+$string['viewsinglereport'] = 'Просмотреть отметки для этого пользователя';
+$string['viewsingleupdate'] = 'Обновить отметки для этого пользователя';
 
 
 $string['yesnooverride'] = 'Да, без замещения';

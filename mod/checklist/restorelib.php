@@ -76,6 +76,7 @@ require_once(dirname(__FILE__).'/locallib.php');
             $checklist->autoupdate = backup_todb_chk_optional_field($info['MOD'], 'AUTOUPDATE', 1);
             $checklist->emailoncomplete = backup_todb_chk_optional_field($info['MOD'], 'EMAILONCOMPLETE', 0);
             $checklist->lockteachermarks = backup_todb_chk_optional_field($info['MOD'], 'LOCKTEACHERMARKS', 0);
+			$checklist->osceallowed = backup_todb_chk_optional_field($info['MOD'], 'OSCEALLOWED', 1);
 
             $newid = insert_record('checklist', $checklist);
 
@@ -247,6 +248,10 @@ require_once(dirname(__FILE__).'/locallib.php');
             $check->teachertimestamp += $restore->course_startdateoffset;
 			//TDMU:
 			$check->teacherid = backup_todb($c_info['#']['TEACHERID']['0']['#']);
+			$check->oscemark = backup_todb($c_info['#']['OSCEMARK']['0']['#']);
+			$check->oscetimestamp = backup_todb($c_info['#']['OSCETIMESTAMP']['0']['#']);
+            $check->teachertimestamp += $restore->course_startdateoffset;
+			$check->osceteacherid = backup_todb($c_info['#']['OSCETEACHERID']['0']['#']);
 
             $check->userid = backup_getid($restore->backup_unique_code,'user',$check->userid);
             if (!$check->userid) {

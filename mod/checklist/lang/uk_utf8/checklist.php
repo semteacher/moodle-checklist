@@ -111,6 +111,21 @@ $string['moveitemup'] = 'Перемістити пункт догори';
 
 $string['noitems'] = 'В контрольному списку немає пунктів';
 
+//TDMU-4 OSKI marks text
+$string['osce'] = 'Оцінки за ОСКІ';
+$string['oscesettings'] = 'Налаштування ОСКІ';
+$string['osceallowed'] = 'Увімкнути оцінки за ОСКІ';
+$string['oscemarkundecided'] = 'Ви ще не здавали цей навик ОСКІ';
+$string['oscemarkfullalt'] = 'Ви виконали цей навик ОСКІ відмінно';
+$string['oscemarkyhalfalt'] = 'Ви виконали цей навик ОСКІ задовільно';
+$string['oscemarkfailalt'] = 'Ви не виконали цей навик ОСКІ!';
+$string['oscemarkfull'] = '1,0';
+$string['oscemarkhalf'] = '0,5';
+$string['oscemarkfail'] = '0,0';
+$string['oscemarksedit'] = 'Редагувати оцінки';
+$string['oscemarksfor'] = 'Оцінки за ОСКІ для';
+$string['oscetoggledates'] = 'Показати/приховати авторів і дати оцінок за ОСКІ';
+
 $string['optionalitem'] = 'Цей пункт є необов\'язковим';
 $string['optionalhide'] = 'Сховати необов\'язкові пункти';
 $string['optionalshow'] = 'Показати необов\'язкові пункти';
@@ -119,10 +134,11 @@ $string['percentcomplete'] = 'Обов\'язкові пункти';
 $string['percentcompleteall'] = 'Всі пункти';
 $string['preview'] = 'Попередній перегляд';
 $string['progress'] = 'Здобутки';
+
 //TDMU - title for column select control
 $string['putchecksforvisible'] = 'Всім показаним студентам:';
 
-$string['report'] = 'Переглянути здобутки';
+$string['report'] = 'Переглянути відмітки';
 $string['reporttablesummary'] = 'Таблиця показує пункти контрольного списку, виконані кожним студентом';
 
 $string['removeauto'] = 'Видалити пункти, що відповідають модулю курсу';
@@ -150,8 +166,9 @@ $string['teacheralongsidecheck'] = 'Студенти і викладачі';
 
 //TDMU: title for teacher name field
 $string['teacherwhocheckthis'] = 'Відмітив';
+$string['teacherwhomarkosce'] = 'Поставив';
 
-$string['toggledates'] = 'Показати/приховати автора і дату відмітки';
+$string['toggledates'] = 'Показати/приховати авторів і дати відміток';
 
 $string['theme'] = 'Тема оформлення контрольного списку';
 
@@ -166,8 +183,8 @@ $string['viewall'] = 'Переглянути всіх студентів';
 $string['viewallcancel'] = 'Відмінити';
 $string['viewallsave'] = 'Зберегти';
 
-$string['viewsinglereport'] = 'Переглянути здобутки цього користувача';
-$string['viewsingleupdate'] = 'Оновити здобутки цього користувача';
+$string['viewsinglereport'] = 'Переглянути відмітки для цього користувача';
+$string['viewsingleupdate'] = 'Оновити відмітки для цього користувача';
 
 
 $string['yesnooverride'] = 'Так, без заміщення';

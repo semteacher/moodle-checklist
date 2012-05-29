@@ -33,6 +33,12 @@ define("CHECKLIST_AUTOPOPULATE_COURSE", 1);
 
 define("CHECKLIST_MAX_INDENT", 10);
 
+//TDMU-4 OSKI definitions
+define("CHECKLIST_OSCE_FULL", 100);//mark "1.0"
+define("CHECKLIST_OSCE_HALF", 50);//mark "0,5"
+define("CHECKLIST_OSCE_FAIL", -1);//mark "0" - failed
+define("CHECKLIST_OSCE_UNDECIDED", 0);//there is no attemp to pass
+
 require_once(dirname(__FILE__).'/locallib.php');
 
 /**

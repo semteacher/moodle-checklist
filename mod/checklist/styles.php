@@ -157,6 +157,18 @@ ol.checklist li .itemcheckedbyteacher {
     background-color: #00bf00;
 }
 
+.checklistreport .level0-halfchecked {
+    background-color: #ffff80;
+}
+
+.checklistreport .level1-halfchecked {
+    background-color: #ffff40;
+}
+
+.checklistreport .level2-halfchecked {
+    background-color: #ffff00;
+}
+
 .checklistreport .level0-unchecked {
     background-color: #ff0000;
 }

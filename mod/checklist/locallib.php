@@ -132,7 +132,7 @@ class checklist_class {
 			//TDMU:origin
 			// $sql = 'SELECT i.id, c.usertimestamp, c.teachermark, c.teachertimestamp FROM '.$CFG->prefix.'checklist_item i LEFT JOIN '.$CFG->prefix.'checklist_check c ';
 			//TDMU: new select
-            $sql = 'SELECT i.id, c.usertimestamp, c.teachermark, c.teachertimestamp, c.teacherid FROM '.$CFG->prefix.'checklist_item i LEFT JOIN '.$CFG->prefix.'checklist_check c ';
+            $sql = 'SELECT i.id, c.usertimestamp, c.teachermark, c.teachertimestamp, c.teacherid, c.oscemark, c.osceteacherid, c.oscetimestamp FROM '.$CFG->prefix.'checklist_item i LEFT JOIN '.$CFG->prefix.'checklist_check c ';
             $sql .= 'ON (i.id = c.item AND c.userid = '.$this->userid.') WHERE i.checklist = '.$this->checklist->id;
 
             $checks = get_records_sql($sql);
@@ -148,6 +148,10 @@ class checklist_class {
                         $this->items[$id]->teachertimestamp = $check->teachertimestamp;
 						//TDMU: get teacher id
 						$this->items[$id]->teacherid = $check->teacherid;
+						//TDMU-4 get OSKI mark
+						$this->items[$id]->oscemark = $check->oscemark;
+						$this->items[$id]->osceteacherid = $check->osceteacherid;
+						$this->items[$id]->oscetimestamp = $check->oscetimestamp;
 						//TDMU: below code is original
                     } elseif ($this->useritems && isset($this->useritems[$id])) {
                         $this->useritems[$id]->checked = $check->usertimestamp > 0;
@@ -548,6 +552,42 @@ class checklist_class {
 
         $this->view_footer();
     }
+	
+	//TDMU-4 OSKI
+	function oscereport() {
+        global $CFG;
+        
+        if (!$this->canviewreports()) {
+            redirect($CFG->wwwroot.'/mod/checklist/view.php?id='.$this->cm->id);
+        }
+
+        if (!$this->caneditother()) {
+            $this->userid = false;
+        }
+
+        $this->view_header();
+
+        print_heading(format_string($this->checklist->name));
+
+        $this->view_tabs('osce');
+		
+        //create new items if no anyone available?
+        if ((!$this->items) && $this->canedit()) {
+            redirect($CFG->wwwroot.'/mod/checklist/edit.php?id='.$this->cm->id, get_string('noitems','checklist'));
+        }
+
+        $this->process_oscereport_actions();//TODO:??
+
+        if ($this->userid) {//show single student marks?
+            $this->view_osceitems();//TODO:??
+        } else {//show list of all marks?
+            add_to_log($this->course->id, "checklist", "oscereport", "oscereport.php?id={$this->cm->id}", addslashes($this->checklist->name), $this->cm->id);
+           $this->view_oscereport();
+        }
+
+        $this->view_footer();
+    }
+    //TDMU-4 /OSKI
 
     function user_complete() {
         $this->view_items(false, true);
@@ -580,6 +620,11 @@ class checklist_class {
         if ($this->canviewreports()) {
             $row[] = new tabobject('report', "$CFG->wwwroot/mod/checklist/report.php?id={$this->cm->id}", get_string('report', 'checklist'));
         }
+		//TDMU-4 OSKI		
+		if ($this->canviewreports() && $this->checklist->osceallowed) {
+            $row[] = new tabobject('osce', "$CFG->wwwroot/mod/checklist/oscemark.php?id={$this->cm->id}", get_string('osce', 'checklist'));
+        }
+		//TDMU-4 /OSKI
         if ($this->canedit()) {
             $row[] = new tabobject('edit', "$CFG->wwwroot/mod/checklist/edit.php?id={$this->cm->id}", get_string('edit', 'checklist'));
         }
@@ -593,12 +638,16 @@ class checklist_class {
         if ($currenttab == 'report') {
             $activated[] = 'report';
         }
-
+		//TDMU-4 OSKI
+        if ($currenttab == 'osce') {
+            $activated[] = 'osce';
+        }
+		//TDMU-4 /OSKI
         if ($currenttab == 'edit') {
             $activated[] = 'edit';
 
             if (!$this->items) {
-                $inactive = array('view', 'report', 'preview');
+                $inactive = array('view', 'report', 'osce', 'preview');
             }
         }
 
@@ -953,7 +1002,7 @@ class checklist_class {
                         echo '<input class="checklistitem'.$checkclass.'" type="checkbox" name="items[]" id='.$itemname.$checked.' value="'.$item->id.'" />';
                     }
                 }
-				//TDMU - backspace aded
+				//TDMU - backspace aded:
                 echo '<label for='.$itemname.$optional.'>&nbsp;'.s($item->displaytext).'</label>';
 				
                 if (isset($item->modulelink)) {
@@ -1019,6 +1068,462 @@ class checklist_class {
                     echo '&nbsp;<input type="text" name="teachercomment['.$item->id.']" />';
                 }
 
+                echo '</li>';
+
+                // Output any user-added items
+                if ($this->useritems) {
+                    $useritem = current($this->useritems);
+
+                    if ($useritem && ($useritem->position == $item->position)) {
+                        echo '<ol class="checklist">';
+                        while ($useritem && ($useritem->position == $item->position)) {
+                            $itemname = '"item'.$useritem->id.'"';
+                            $checked = ($updateform && $useritem->checked) ? ' checked="checked" ' : '';
+                            if (isset($useritem->editme)) {
+                                $itemtext = explode("\n", $useritem->displaytext, 2);
+                                $itemtext[] = '';
+                                $text = $itemtext[0];
+                                $note = $itemtext[1];
+                                echo '<li>';
+                                echo '<div style="float: left;">';
+                                if ($showcheckbox) {
+                                    echo '<input class="checklistitem itemoptional" type="checkbox" name="items[]" id='.$itemname.$checked.' disabled="disabled" value="'.$useritem->id.'" />';
+                                }
+                                echo '<form style="display:inline" action="'.$thispage.'" method="post">';
+                                echo '<input type="hidden" name="action" value="updateitem" />';
+                                echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+                                echo '<input type="hidden" name="itemid" value="'.$useritem->id.'" />';
+                                echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
+                             //   echo '<input type="text" size="'.CHECKLIST_TEXT_INPUT_WIDTH.'" name="displaytext" value="'.s($text).'" id="updateitembox" />';
+							 //TDMU: replace text field with textarea
+							 echo '<textarea id="updateitembox" name="displaytext"  rows="2" cols="50">'.s($text).'</textarea>';
+                                echo '<input type="submit" name="updateitem" value="'.get_string('updateitem','checklist').'" />';
+                                echo '<br />';
+                                echo '<textarea name="displaytextnote" rows="3" cols="25">'.s($note).'</textarea>';
+                                echo '</form>';
+                                echo '</div>';
+                                echo '<form style="display:inline;" action="'.$thispage.'" method="get">';
+                                echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+                                echo '<input type="hidden" name="useredit" value="on" />';
+                                echo '<input type="submit" name="canceledititem" value="'.get_string('canceledititem','checklist').'" />';
+                                echo '</form>';
+                                echo '<br style="clear: both;" />';
+                                echo '</li>';
+
+                                $focusitem = 'updateitembox';
+                            } else {
+                                echo '<li>';
+                                if ($showcheckbox) {
+                                    echo '<input class="checklistitem itemoptional" type="checkbox" name="items[]" id='.$itemname.$checked.' value="'.$useritem->id.'" />';
+                                }
+                                $splittext = explode("\n",s($useritem->displaytext),2);
+                                $splittext[] = '';
+                                $text = $splittext[0];
+                                $note = str_replace("\n",'<br />',$splittext[1]);
+                                echo '<label class="useritem" for='.$itemname.'>'.$text.'</label>';
+
+                                if ($addown) {
+                                    $baseurl = $thispage.'&amp;itemid='.$useritem->id.'&amp;sesskey='.sesskey().'&amp;action=';
+                                    echo '&nbsp;<a href="'.$baseurl.'edititem">';
+                                    $title = '"'.get_string('edititem','checklist').'"';
+                                    echo '<img src="'.$CFG->pixpath.'/t/edit.gif" alt='.$title.' title='.$title.' /></a>';
+
+                                    echo '&nbsp;<a href="'.$baseurl.'deleteitem" class="deleteicon">';
+                                    $title = '"'.get_string('deleteitem','checklist').'"';
+                                    echo '<img src="'.$CFG->wwwroot.'/mod/checklist/images/remove.png" alt='.$title.' title='.$title.' /></a>';
+                                }
+                                if ($note != '') {
+                                    echo '<div class="note">'.$note.'</div>';
+                                }
+
+                                echo '</li>';
+                            }
+                            $useritem = next($this->useritems);
+                        }
+                        echo '</ol>';
+                    }
+                }
+
+                if ($addown && ($item->id == $this->additemafter)) {
+                    echo '<ol class="checklist"><li>';
+                    echo '<div style="float: left;">';
+                    echo '<form action="'.$thispage.'" method="post">';
+                    echo '<input type="hidden" name="action" value="additem" />';
+                    echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+                    echo '<input type="hidden" name="position" value="'.$item->position.'" />';
+                    echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
+                    if ($showcheckbox) {
+                        echo '<input type="checkbox" disabled="disabled" />';
+                    }
+                    echo '<input type="text" size="'.CHECKLIST_TEXT_INPUT_WIDTH.'" name="displaytext" value=""  id="additembox" />';
+					//echo '<textarea id="additembox" name="displaytext"  rows="2" cols="50">'new1'</textarea>';
+                    echo '<input type="submit" name="additem" value="'.get_string('additem','checklist').'" />';
+                    echo '<br />';
+                    echo '<textarea name="displaytextnote" rows="3" cols="25"></textarea>';
+                    echo '</form>';
+                    echo '</div>';
+                    echo '<form style="display:inline" action="'.$thispage.'" method="get">';
+                    echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+                    echo '<input type="hidden" name="useredit" value="on" />';
+                    echo '<input type="submit" name="canceledititem" value="'.get_string('canceledititem','checklist').'" />';
+                    echo '</form>';
+                    echo '<br style="clear: both;" />';
+                    echo '</li></ol>';
+
+                    if (!$focusitem) {
+                        $focusitem = 'additembox';
+                    }
+                }
+            }
+            echo '</ol>';
+
+            if ($updateform) {
+                echo '<input id="checklistsavechecks" type="submit" name="submit" value="'.get_string('savechecks','checklist').'" />';
+                echo '<input type="hidden" name="sortby" value="'.$this->sortby.'" />';
+                if ($viewother) {
+                    echo '<input type="submit" name="savenext" value="'.get_string('saveandnext').'" />';
+                    echo '<input type="submit" name="viewnext" value="'.get_string('next').'" />';
+                }
+                echo '</form>';
+            }
+
+            if ($focusitem) {
+                echo '<script type="text/javascript">document.getElementById("'.$focusitem.'").focus();</script>';
+            }
+
+            if ($addown) {
+                echo '<script type="text/javascript">';
+                echo 'function confirmdelete(url) {';
+                echo 'if (confirm("'.get_string('confirmdeleteitem','checklist').'")) { window.location = url; } ';
+                echo '} ';
+                echo 'var links = document.getElementById("checklistouter").getElementsByTagName("a"); ';
+                echo 'for (var i in links) { ';
+                echo 'if (links[i].className == "deleteicon") { ';
+                echo 'var url = links[i].href;';
+                echo 'links[i].href = "#";';
+                echo 'links[i].onclick = new Function( "confirmdelete(\'"+url+"\')" ) ';
+                echo '}} ';
+                echo '</script>';
+            }
+        }
+
+        print_box_end();
+    }
+
+    function view_osceitems($userreport = false) {
+        global $CFG, $USER;
+$viewother = true;//TDMU: for compatible issues
+        print_box_start('generalbox boxwidthwide boxaligncenter');
+
+//        $comments = $this->checklist->teachercomments;
+//        $editcomments = false;
+//        $thispage = $CFG->wwwroot.'/mod/checklist/view.php?id='.$this->cm->id;
+
+        $teachermarklocked = false;
+        //$showcompletiondates = false;
+		//TDMU: ENABLE lock teacher mark by default
+		//$teachermarklocked = TRUE;
+		//TDMU: ENABLE show completion dates by default
+		$showcompletiondates = TRUE;
+		
+//        if ($viewother) {
+//            $showbars = optional_param('showbars',false,PARAM_BOOL);
+//TDMU-4: comments disabled
+/*
+            if ($comments) {
+                $editcomments = optional_param('editcomments', false, PARAM_BOOL);
+            }
+			*/
+            $thispage = $CFG->wwwroot.'/mod/checklist/oscemark.php?id='.$this->cm->id;
+            if (!$student = get_record('user', 'id', $this->userid)) {
+                error('No such user!');
+            }
+
+            $info = addslashes($this->checklist->name).' ('.fullname($student, true).')';
+            add_to_log($this->course->id, "checklist", "report", "report.php?id={$this->cm->id}&studentid={$this->userid}", $info, $this->cm->id);
+
+            echo '<h2>'.get_string('oscemarksfor','checklist').' '.fullname($student, true).'</h2>';
+            echo '&nbsp;<form style="display: inline;" action="'.$thispage.'" method="get">';
+            echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+//            echo $showbars ? '<input type="hidden" name="showbars" value="on" />' : '';
+            echo '<input type="hidden" name="sortby" value="'.$this->sortby.'" />';
+            echo '<input type="submit" name="viewall" value="'.get_string('viewall','checklist').'" />';
+            echo '</form>';
+			//TDMU-4: comments disabled
+/*
+            if (!$editcomments) {
+                echo '<form style="display: inline;" action="'.$thispage.'" method="get">';
+                echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+                echo $showbars ? '<input type="hidden" name="showbars" value="on" />' : '';
+                echo '<input type="hidden" name="sortby" value="'.$this->sortby.'" />';
+                echo '<input type="hidden" name="editcomments" value="on" />';
+                echo '<input type="hidden" name="studentid" value="'.$this->userid.'" />';
+                echo ' <input type="submit" name="viewall" value="'.get_string('addcomments','checklist').'" />';
+                echo '</form>';
+            }
+*/
+            echo '<form style="display: inline;" action="'.$thispage.'" method="get">';
+            echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+//            echo $showbars ? '<input type="hidden" name="showbars" value="on" />' : '';
+            echo '<input type="hidden" name="sortby" value="'.$this->sortby.'" />';
+            echo '<input type="hidden" name="studentid" value="'.$this->userid.'" />';
+            echo '<input type="hidden" name="action" value="toggledates" />';
+            echo ' <input type="submit" name="toggledates" value="'.get_string('oscetoggledates','checklist').'" />';
+            echo '</form>';
+
+            $teachermarklocked = $this->checklist->lockteachermarks && !has_capability('mod/checklist:updatelocked', $this->context);
+       //TDMU
+	        $showcompletiondates = $this->showcompletiondates();
+//        }
+
+        echo format_text($this->checklist->intro, $this->checklist->introformat);
+        echo '<br/>';
+
+        $showteachermark = false;
+        $showcheckbox = true;
+        if ($this->canupdateown() || $viewother || $userreport) {
+		//TDMU-4 progress bar deleted for OSKI
+//            $this->view_progressbar();
+            $showteachermark = ($this->checklist->teacheredit == CHECKLIST_MARKING_TEACHER) || ($this->checklist->teacheredit == CHECKLIST_MARKING_BOTH);
+            $showcheckbox = ($this->checklist->teacheredit == CHECKLIST_MARKING_STUDENT) || ($this->checklist->teacheredit == CHECKLIST_MARKING_BOTH);
+            $teachermarklocked = $teachermarklocked && $showteachermark; // Make sure this is OFF, if not showing teacher marks
+        }
+        $overrideauto = ($this->checklist->autoupdate != CHECKLIST_AUTOUPDATE_YES);
+        $checkgroupings = $this->checklist->autopopulate && $this->groupings;
+
+        if (!$this->items) {
+            print_string('noitems','checklist');
+        } else {
+            $focusitem = false;
+            $updateform = ($showcheckbox && $this->canupdateown() && !$viewother && !$userreport) || ($viewother && ($showteachermark || $editcomments));
+            $addown = $this->canaddown() && $this->useredit;
+            if ($updateform) {
+                if ($this->canaddown() && !$viewother) {
+                    echo '<form style="display:inline;" action="'.$thispage.'" method="get">';
+                    echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+                    if ($addown) {
+                        echo '<input type="hidden" name="useredit" value="off" />';
+                        echo '<input type="submit" name="submit" value="'.get_string('addownitems-stop','checklist').'" />';
+                    } else {
+                        echo '<input type="hidden" name="useredit" value="on" />';
+                        echo '<input type="submit" name="submit" value="'.get_string('addownitems','checklist').'" />';
+                    }
+                    echo '</form>';
+                }
+//TDMU-4: disabled
+/*
+                if (!$viewother) {
+                    // Load the Javascript required to send changes back to the server (without clicking 'save')
+                    require_js(array('yui_yahoo', 'yui_dom', 'yui_event', 'yui_connection', 'yui_animation'));
+                    require_js($CFG->wwwroot.'/mod/checklist/updatechecks.js');
+                    $updatechecksurl = $CFG->wwwroot.'/mod/checklist/updatechecks.php';
+                    $updateprogress = $showteachermark ? 0 : 1; // Only update progress bars for 'student only' checklists
+                    echo '<script type="text/javascript">mod_checklist.set_server("'.$updatechecksurl.'","'.sesskey().'","'.$this->cm->id.'", '.$updateprogress.');</script>';
+                }
+*/
+                echo '<form action="'.$thispage.'" method="post">';
+                echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+                echo '<input type="hidden" name="action" value="updatechecks" />';
+                echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
+                if ($viewother) {
+                    echo '<input type="hidden" name="studentid" value="'.$this->userid.'" />';
+                }
+                if ($addown) {
+                    echo '<input type="hidden" name="useredit" value="on" />';
+                }
+            }
+
+            if ($this->useritems) {
+                reset($this->useritems);
+            }
+//TDMU-4: comments disabled
+/*
+            if ($comments) {
+                $itemids = implode(',',array_keys($this->items));
+                $commentsunsorted = get_records_select('checklist_comment',"userid = {$this->userid} AND itemid IN ({$itemids})");
+                $commentuserids = array();
+                $commentusers = array();
+                if ($commentsunsorted) {
+                    $comments = array();
+                    foreach ($commentsunsorted as $comment) {
+                        $comments[$comment->itemid] = $comment;
+                        if ($comment->commentby) {
+                            $commentuserids[] = $comment->commentby;
+                        }
+                    }
+                    if (!empty($commentuserids)) {
+                        $commentuserids = implode(",",array_unique($commentuserids, SORT_NUMERIC));
+                        $commentusers = get_records_select('user', 'id IN ('.$commentuserids.')');
+                    }
+                } else {
+                    $comments = false;
+                }
+            }
+*/
+            if ($teachermarklocked) {
+                echo '<p style="checklistwarning">'.get_string('lockteachermarkswarning', 'checklist').'</p>';
+            }
+
+            echo '<ol class="checklist" id="checklistouter">';
+            $currindent = 0;
+            foreach ($this->items as $item) {
+
+                if ($item->hidden) {
+                    continue;
+                }
+
+                if ($checkgroupings && $item->grouping) {
+                    if (!in_array($item->grouping, $this->groupings)) {
+                        continue;  // Current user is not a member of this item's grouping, so skip
+                    }
+                }
+
+                while ($item->indent > $currindent) {
+                    $currindent++;
+                    echo '<ol class="checklist">';
+                }
+                while ($item->indent < $currindent) {
+                    $currindent--;
+                    echo '</ol>';
+                }
+                $itemname = '"item'.$item->id.'"';
+                $checked = (($updateform || $viewother || $userreport) && $item->oscemark != CHECKLIST_OSCE_UNDECIDED) ? ' checked="checked" ' : '';
+                if ($viewother || $userreport) {
+                    $checked .= ' disabled="disabled" ';
+                } else if (!$overrideauto && $item->moduleid) {
+                    $checked .= ' disabled="disabled" ';
+                }
+                switch ($item->colour) {
+                case 'red':
+                    $itemcolour = 'itemred';
+                    break;
+                case 'orange':
+                    $itemcolour = 'itemorange';
+                    break;
+                case 'green':
+                    $itemcolour = 'itemgreen';
+                    break;
+                case 'purple':
+                    $itemcolour = 'itempurple';
+                    break;
+                default:
+                    $itemcolour = 'itemblack';
+                }
+
+                if ($item->itemoptional == CHECKLIST_OPTIONAL_HEADING) {
+                    $optional = ' class="itemheading '.$itemcolour.'" ';
+                    $spacerimg = $CFG->wwwroot.'/mod/checklist/images/check_spacer.gif';
+                } elseif ($item->itemoptional == CHECKLIST_OPTIONAL_YES) {
+                    $optional = ' class="itemoptional '.$itemcolour.'" ';
+                    $checkclass = ' itemoptional';
+                } else {
+                    $optional = ' class="'.$itemcolour.'" ';
+                    $checkclass = '';
+                }
+                echo '<li>';
+                if ($showteachermark) {
+                    if ($item->itemoptional == CHECKLIST_OPTIONAL_HEADING) {
+                        //echo '<img src="'.$spacerimg.'" alt="" title="" />';
+                    } else {
+                        if ($viewother) {
+                            if (($teachermarklocked && $item->oscemark != CHECKLIST_OSCE_UNDECIDED) || ($USER->id == $this->userid)) {
+                                $disabled =  'disabled="disabled" ';
+                            } else {
+                                $disabled = '';
+                            }
+
+                            $selu = ($item->oscemark == CHECKLIST_OSCE_UNDECIDED) ? 'selected="selected" ' : '';
+                            $self = ($item->oscemark == CHECKLIST_OSCE_FULL) ? 'selected="selected" ' : '';
+							$selh = ($item->oscemark == CHECKLIST_OSCE_HALF) ? 'selected="selected" ' : '';
+                            $seln = ($item->oscemark == CHECKLIST_OSCE_FAIL) ? 'selected="selected" ' : '';
+
+                            echo '<select name="items[]" '.$disabled.'>';
+                            echo '<option value="'.$item->id.':'.CHECKLIST_OSCE_UNDECIDED.'" '.$selu.'></option>';
+                            echo '<option value="'.$item->id.':'.CHECKLIST_OSCE_FULL.'" '.$self.'>'.get_string('oscemarkfull','checklist').'</option>';
+							echo '<option value="'.$item->id.':'.CHECKLIST_OSCE_HALF.'" '.$selh.'>'.get_string('oscemarkhalf','checklist').'</option>';
+                            echo '<option value="'.$item->id.':'.CHECKLIST_OSCE_FAIL.'" '.$seln.'>'.get_string('oscemarkfail','checklist').'</option>';
+                            echo '</select>';
+                        } else {
+                            list($imgsrc, $titletext) = $this->get_teachermark($item->id);
+                            echo '<img src="'.$imgsrc.'" alt="'.$titletext.'" title="'.$titletext.'" />';
+                        }
+                    }
+                }
+                if ($showcheckbox) {
+                    if ($item->itemoptional == CHECKLIST_OPTIONAL_HEADING) {
+                        //echo '<img src="'.$spacerimg.'" alt="" title="" />';
+                    } else {
+                        echo '<input class="checklistitem'.$checkclass.'" type="checkbox" name="items[]" id='.$itemname.$checked.' value="'.$item->id.'" />';
+                    }
+                }
+				//TDMU - backspace aded:
+                echo '<label for='.$itemname.$optional.'>&nbsp;'.s($item->displaytext).'</label>';
+				
+                if (isset($item->modulelink)) {
+                    $imgurl = $CFG->wwwroot.'/mod/checklist/images/follow_link.png';
+                    echo '&nbsp;<a href="'.$item->modulelink.'"><img src="'.$imgurl.'" alt="'.get_string('linktomodule','checklist').'" /></a>';
+                }
+
+                if ($addown) {
+                    $baseurl = $thispage.'&amp;itemid='.$item->id.'&amp;sesskey='.sesskey().'&amp;action=';
+                    echo '&nbsp;<a href="'.$baseurl.'startadditem">';
+                    $title = '"'.get_string('additemalt','checklist').'"';
+                    echo '<img src="'.$CFG->wwwroot.'/mod/checklist/images/add.png" alt='.$title.' title='.$title.' /></a>';
+                }
+
+                if ($item->duetime) {
+                    if ($item->duetime > time()) {
+                        echo '<span class="itemdue"> '.userdate($item->duetime, get_string('strftimedate')).'</span>';
+                    } else {
+                        echo '<span class="itemoverdue"> '.userdate($item->duetime, get_string('strftimedate')).'</span>';
+                    }
+                }
+
+                if ($showcompletiondates) {
+                    if ($item->itemoptional != CHECKLIST_OPTIONAL_HEADING) {
+                        if ($showteachermark && $item->oscemark != CHECKLIST_OSCE_UNDECIDED && $item->oscetimestamp) {
+						//TDMU:show who check (uncheck) this item
+						//$checkeruser = get_record('user', 'id', $item->teacherid)
+						$chekerusertitle = get_string('teacherwhomarkosce','checklist');
+						$checkeruser = array();
+						$checkeruser = get_records_select('user', "id = {$item->osceteacherid}");
+						echo '<span class="itemcheckedbyteacher">&nbsp;'.$chekerusertitle.'&nbsp;';
+						echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$item->osceteacherid.'&amp;course='.$this->course->id.'">'.fullname($checkeruser[$item->osceteacherid]).'</a>';						
+//echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$comment->commentby.'&amp;course='.$this->course->id.'">'.fullname($commentusers[$comment->commentby]).'</a> ';							
+						echo '&nbsp;</span>';
+						//TDMU:following code is original
+						
+                            echo '<span class="itemteacherdate">'.userdate($item->oscetimestamp, get_string('strftimedatetimeshort')).'</span>';
+                        }
+                        if ($showcheckbox && $item->checked && $item->usertimestamp) {
+						echo '<span class="itemuserdate">'.userdate($item->usertimestamp, get_string('strftimedatetimeshort')).'</span>';
+                        }
+                    }
+                }
+
+                $foundcomment = false;
+//TDMU-4: comments disabled
+/*
+                if ($comments) {
+                    if (array_key_exists($item->id, $comments)) {
+                        $comment =  $comments[$item->id];
+                        $foundcomment = true;
+                        echo ' <span class="teachercomment">&nbsp;';
+                        if ($comment->commentby) {
+                            echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$comment->commentby.'&amp;course='.$this->course->id.'">'.fullname($commentusers[$comment->commentby]).'</a>: ';
+                        }
+                        if ($editcomments) {
+                            echo '<input type="text" name="teachercomment['.$item->id.']" value="'.s($comment->text).'" />';
+                        } else {
+                            echo s($comment->text);
+                        }
+                        echo '&nbsp;</span>';
+                    }
+                }
+                if (!$foundcomment && $editcomments) {
+                    echo '&nbsp;<input type="text" name="teachercomment['.$item->id.']" />';
+                }
+*/
                 echo '</li>';
 
                 // Output any user-added items
@@ -1810,7 +2315,6 @@ class checklist_class {
 
     function print_report_table($table, $editchecks) {
 		global $CFG, $USER;
-        //global $CFG, $USER, $tablehtml;
 
         $output = '';
 
@@ -1967,6 +2471,371 @@ class checklist_class {
                                 $img .= '<option value="'.CHECKLIST_TEACHERMARK_UNDECIDED.'" '.$selu.'></option>';
                                 $img .= '<option value="'.CHECKLIST_TEACHERMARK_YES.'" '.$sely.'>'.get_string('yes').'</option>';
                                 $img .= '<option value="'.CHECKLIST_TEACHERMARK_NO.'" '.$seln.'>'.get_string('no').'</option>';
+                                $img .= '</select>';
+                            }
+                        }
+                        if ($showstudentmark) {
+                            if ($studentmark) {
+                                if (!$showteachermark) {
+                                    $cellclass .= '-checked';
+                                }
+                                $img .= $tickimg;
+                            }
+                        }
+
+                        if ($key == $lastkey) {
+                            $cellclass .= ' lastcol';
+                        }
+//output students marks in table row are there:
+                        $output .= '<td style=" text-align: center; width: '.$size.';" class="'.$cellclass.'">'.$img.'</td>';
+                    }
+                }
+            }
+            $output .= '</tr>';
+        }
+
+        $output .= '</table>';
+
+        echo $output;
+    }
+	
+	function view_oscereport() {
+		global $CFG;
+     
+        $editchecks = $this->caneditother() && optional_param('editchecks', false, PARAM_BOOL);
+		//TDMU-3:begin
+		if ($editchecks){
+			$showtdmuexportbtn = false;
+		} else {
+			$showtdmuexportbtn = true;
+		}
+		//TDMU-3:end
+		
+        $page = optional_param('page', 0, PARAM_INT);
+        $perpage = optional_param('perpage', 30, PARAM_INT);
+
+        if ($this->checklist->autoupdate && $this->checklist->autopopulate) {
+            if ($this->checklist->teacheredit == CHECKLIST_MARKING_TEACHER) {
+                echo '<p>'.get_string('autoupdatewarning_teacher', 'checklist').'</p>';
+            } else if ($this->checklist->teacheredit == CHECKLIST_MARKING_BOTH) {
+                echo '<p>'.get_string('autoupdatewarning_both', 'checklist').'</p>';
+            }
+        }
+
+        $thisurl = $CFG->wwwroot.'/mod/checklist/oscemark.php?id='.$this->cm->id;
+        $thisurl .= $this->showoptional ? '' : '&amp;action=hideoptional';
+		$thisurl .= $editchecks ? '&amp;editchecks=on' : '';//TDMU-original bug! - editor was closed when next page visited-this code fix it!
+        $thisurl .= '&amp;sortby='.$this->sortby;
+
+        groups_print_activity_menu($this->cm, $thisurl);
+        $activegroup = groups_get_activity_group($this->cm, true);
+
+		//TDMU - this script perform bulk update of the "select" controls selected value
+		echo '<script type="text/javascript">function bulk_select(el){ var elements = document.getElementsByTagName(\'select\'), sI = el.selectedIndex; for(var i = 0; i < elements.length; i++) if(elements[i].className == el.className) elements[i].selectedIndex = sI; }</script>';
+		//form that responce to a "show/hide optional" button
+        echo '&nbsp;&nbsp;<form style="display: inline;" action="'.$CFG->wwwroot.'/mod/checklist/oscemark.php" method="get" />';
+        echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+        echo '<input type="hidden" name="sortby" value="'.$this->sortby.'" />';
+        
+        echo $editchecks ? '<input type="hidden" name="editchecks" value="on" />' : '';		
+        if ($this->showoptional) {
+            echo '<input type="hidden" name="action" value="hideoptional" />';
+            echo '<input type="submit" name="submit" value="'.get_string('optionalhide','checklist').'" />';
+        } else {
+            echo '<input type="hidden" name="action" value="showoptional" />';
+            echo '<input type="submit" name="submit" value="'.get_string('optionalshow','checklist').'" />';
+        }
+        echo '</form>';
+
+        switch ($this->sortby) {
+        case 'firstdesc':
+            $orderby = 'u.firstname DESC';
+            break;
+
+        case 'lastasc':
+            $orderby = 'u.lastname';
+            break;
+
+        case 'lastdesc':
+            $orderby = 'u.lastname DESC';
+            break;
+
+        default:
+            $orderby = 'u.firstname';
+            break;
+        }
+
+        $ausers = false;
+        if ($users = get_users_by_capability($this->context, 'mod/checklist:updateown', 'u.id', $orderby, '', '', $activegroup, '', false)) {
+            $users = array_keys($users);
+
+            print_paging_bar(count($users), $page, $perpage, $thisurl.'&amp;perpage='.$perpage.'&amp;');
+            $users = array_slice($users, $page*$perpage, $perpage);
+
+            $ausers = get_records_sql('SELECT u.id, u.firstname, u.lastname FROM '.$CFG->prefix.'user u WHERE u.id IN ('.implode(',',$users).') ORDER BY '.$orderby);
+        }
+
+
+        if ($editchecks) {
+            echo '&nbsp;&nbsp;<form style="display: inline;" action="'.$CFG->wwwroot.'/mod/checklist/oscemark.php" method="post" />';
+            echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+            echo '<input type="hidden" name="sortby" value="'.$this->sortby.'" />';
+            echo $this->showoptional ? '' : '<input type="hidden" name="action" value="hideoptional" />';
+            //echo '<input type="hidden" name="editchecks" value="on" />';
+			//TDMU:after save - return to view mode!
+			echo '<input type="hidden" name="editchecks" value="off" />';
+
+            echo '<input type="hidden" name="action" value="updateallchecks" />';
+            echo '<input type="submit" name="submit" value="'.get_string('savechecks', 'checklist').'" />';
+        } else if ($this->caneditother() && $this->checklist->teacheredit != CHECKLIST_MARKING_STUDENT) {
+            echo '&nbsp;&nbsp;<form style="display: inline;" action="'.$CFG->wwwroot.'/mod/checklist/oscemark.php" method="get" />';
+            echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+            echo '<input type="hidden" name="sortby" value="'.$this->sortby.'" />';
+            echo $this->showoptional ? '' : '<input type="hidden" name="action" value="hideoptional" />';
+            echo '<input type="hidden" name="editchecks" value="on" />';
+            echo '<input type="submit" name="submit" value="'.get_string('oscemarksedit', 'checklist').'" />';
+            echo '</form>';
+        } 
+		//TDMU-3 begin block
+		if ($showtdmuexportbtn){
+			//TODO: temporarily disabled. Need a new procedure!
+		///	$exporturl = $CFG->wwwroot.'/mod/checklist/exporthtml.php?id='.$this->cm->id.'&sortby='.$this->sortby.'&showoptional='.$this->showoptional.'&page='.$page.'&perpage='.$perpage;
+        ///   	echo '<div class="checklistimportexport">';
+		///	echo '<a href="'.$exporturl.'">'.get_string('classbookexportlnk', 'checklist').'</a>';
+        ///	echo '</div>';
+		}
+		//TDMU-3 end block
+
+        echo '<br style="clear:both"/>';
+
+            // Show full table
+            $firstlink = 'sortby=firstasc';
+            $lastlink = 'sortby=lastasc';
+            $firstarrow = '';
+            $lastarrow = '';
+            if ($this->sortby == 'firstasc') {
+                $firstlink = 'sortby=firstdesc';
+                $firstarrow = '<img src="'.$CFG->pixpath.'/t/down.gif" alt="'.get_string('asc').'" />';
+            } elseif ($this->sortby == 'lastasc') {
+                $lastlink = 'sortby=lastdesc';
+                $lastarrow = '<img src="'.$CFG->pixpath.'/t/down.gif" alt="'.get_string('asc').'" />';
+            } elseif ($this->sortby == 'firstdesc') {
+                $firstarrow = '<img src="'.$CFG->pixpath.'/t/up.gif" alt="'.get_string('desc').'" />';
+            } elseif ($this->sortby == 'lastdesc') {
+                $lastarrow = '<img src="'.$CFG->pixpath.'/t/up.gif" alt="'.get_string('desc').'" />';
+            }
+            $firstlink = preg_replace('/sortby=.*/', $firstlink, $thisurl);
+            $lastlink = preg_replace('/sortby=.*/', $lastlink, $thisurl);
+            $nameheading = get_string('fullname');
+            $nameheading = ' <a href="'.$firstlink.'" >'.get_string('firstname').'</a> '.$firstarrow;
+            $nameheading .= ' / <a href="'.$lastlink.'" >'.get_string('lastname').'</a> '.$lastarrow;
+
+            $table = new stdClass;
+            $table->head = array($nameheading);
+            $table->level = array(-1);
+            $table->size = array('100px');
+            $table->skip = array(false);
+            foreach ($this->items as $item) {
+                if ($item->hidden) {
+                    continue;
+                }
+
+                $table->head[] = s($item->displaytext);
+                $table->level[] = ($item->indent < 3) ? $item->indent : 2;
+                $table->size[] = '80px';
+                $table->skip[] = (!$this->showoptional) && ($item->itemoptional == CHECKLIST_OPTIONAL_YES);
+            }
+
+            $table->data = array();
+            if ($ausers) {
+                foreach ($ausers as $auser) {
+                    $row = array();
+
+                    if ($this->caneditother()) {
+                        $vslink = ' <a href="'.$thisurl.'&amp;studentid='.$auser->id.'" ';
+                        $vslink .= 'alt="'.get_string('viewsinglereport','checklist').'" title="'.get_string('viewsinglereport','checklist').'" />';
+                        $vslink .= '<img src="'.$CFG->pixpath.'/t/preview.gif" /></a>';
+                    } else {
+                        $vslink = '';
+                    }
+                    $userlink = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$auser->id.'&amp;course='.$this->course->id.'">'.fullname($auser).'</a>';
+
+                    $row[] = $userlink.$vslink;
+					
+					//TODO: TDMU:select with OSKI teacher mark and teacher date
+					$sql = 'SELECT i.id, i.itemoptional, i.hidden, c.usertimestamp, c.teachermark, c.teacherid, c.teachertimestamp, c.oscemark, c.osceteacherid, c.oscetimestamp FROM '.$CFG->prefix.'checklist_item i LEFT JOIN '.$CFG->prefix.'checklist_check c ';					
+                    $sql .= 'ON (i.id = c.item AND c.userid = '.$auser->id.') WHERE i.checklist = '.$this->checklist->id.' AND i.userid=0 ORDER BY i.position';
+                    $checks = get_records_sql($sql);
+
+                    foreach ($checks as $check) {
+                        if ($check->hidden) {
+                            continue;
+                        }
+
+                        if ($check->itemoptional == CHECKLIST_OPTIONAL_HEADING) {
+                            $row[] = array(false, false, true, 0, 0, 0);//TDMU: added last paramether
+                        } else {
+                            if ($check->usertimestamp > 0) {
+                                $row[] = array($check->oscemark,true, false, $auser->id, $check->id, 0); //TDMU: added last paramether
+                            } else {
+                                $row[] = array($check->oscemark,false, false, $auser->id, $check->id, $check->oscetimestamp); //TDMU: added last paramether
+                            }
+                        }
+                    }
+
+                    $table->data[] = $row;
+                }
+            }
+			
+            $this->print_oscereport_table($table, $editchecks);
+
+            if ($editchecks) {
+                echo '<input type="submit" name="submit" value="'.get_string('savechecks','checklist').'" />';
+                echo '</form>';
+            }
+        
+    }
+
+    function print_oscereport_table($table, $editchecks) {
+		global $CFG, $USER;
+
+        $output = '';
+
+        $output .= '<table summary="'.get_string('reporttablesummary','checklist').'"';
+        $output .= ' cellpadding="5" cellspacing="1" class="generaltable boxaligncenter checklistreport">';
+
+        $showteachermark = !($this->checklist->teacheredit == CHECKLIST_MARKING_STUDENT);
+        $showstudentmark = !($this->checklist->teacheredit == CHECKLIST_MARKING_TEACHER);
+        $teachermarklocked = $this->checklist->lockteachermarks && !has_capability('mod/checklist:updatelocked', $this->context);
+
+        // Sort out the heading row
+        $countcols = count($table->head);
+        $output .= '<tr>';
+        $keys = array_keys($table->head);
+        $lastkey = end($keys);
+        foreach ($table->head as $key => $heading) {
+            if ($table->skip[$key]) {
+                continue;
+            }
+            $size = $table->size[$key];
+            $levelclass = ' head'.$table->level[$key];
+            if ($key == $lastkey) {
+                $levelclass .= ' lastcol';
+            }
+            $output .= '<th style="vertical-align:top; align: center; width:'.$size.'" class="header c'.$key.$levelclass.'" scope="col">';
+           $output .= $heading.'</th>';
+        }
+		$output .= '</tr>';
+		
+		//TDMU - start block - show select row for bulk change checks for visible students
+		if ($editchecks) {
+			$output .= '<tr>';		
+        	foreach ($table->head as $key => $heading) {
+            	if ($table->skip[$key]) {
+                	continue;
+            	}
+            	$size = $table->size[$key];
+            	$levelclass = ' head'.$table->level[$key];
+            	if ($key == $lastkey) {
+                	$levelclass .= ' lastcol';
+            	}
+            	$output .= '<td style=" text-align: center; width:'.$size.'" class="header c'.$key.$levelclass.'" scope="col">';
+		   		if ($key!=0) {			//TODO:need cher logic!
+                    if ($teachermarklocked && $teachermark == CHECKLIST_OSCE_FULL || $teachermark == CHECKLIST_OSCE_HALF || $userid == $USER->id) {
+                        $disabled = 'disabled="disabled" ';
+                    } else {
+                        $disabled = '';
+                    }
+                    $selu = ($teachermark == CHECKLIST_OSCE_UNDECIDED) ? 'selected="selected" ' : '';
+                    $self = ($teachermark == CHECKLIST_OSCE_FULL) ? 'selected="selected" ' : '';
+					$selh = ($teachermark == CHECKLIST_OSCE_HALF) ? 'selected="selected" ' : '';
+                    $seln = ($teachermark == CHECKLIST_OSCE_FAIL) ? 'selected="selected" ' : '';
+
+                    $img = '<select name="bulk_selector_tablecol'.$key.'" '.$disabled.' class="tablecol_'.$key.'" onChange="bulk_select(this);">';//TDMU - class identifi aded there
+                    $img .= '<option value="'.CHECKLIST_OSCE_UNDECIDED.'" '.$selu.'></option>';
+                    $img .= '<option value="'.CHECKLIST_OSCE_FULL.'" '.$self.'>'.get_string('oscemarkfull','checklist').'</option>';
+					$img .= '<option value="'.CHECKLIST_OSCE_HALF.'" '.$selh.'>'.get_string('oscemarkhalf','checklist').'</option>';
+                    $img .= '<option value="'.CHECKLIST_OSCE_FAIL.'" '.$seln.'>'.get_string('oscemarkfail','checklist').'</option>';
+                    $img .= '</select>';
+					
+					$output .= '<div>'.get_string('putchecksforvisible','checklist').'</div>';
+		  			$output .= '<div>'.$img.'</div>';
+		    	}
+		    	$output .= '</td>';
+        	}
+			$output .= '</tr>';
+		}
+	//TDMU - end block - end select row for bulk change checks for visible students
+
+        // Output the data
+        $tickimg = '<img src="'.$CFG->pixpath.'/i/tick_green_big.gif" alt="'.get_string('itemcomplete','checklist').'" />';
+        $teacherimg = array(CHECKLIST_OSCE_UNDECIDED => '<img src="'.$CFG->wwwroot.'/mod/checklist/images/empty_box.gif" alt="'.get_string('oscemarkundecided','checklist').'" />',
+                            CHECKLIST_OSCE_FULL => '<img src="'.$CFG->wwwroot.'/mod/checklist/images/osce_full.png" alt="'.get_string('oscemarkfullalt','checklist').'" />',
+							CHECKLIST_OSCE_HALF => '<img src="'.$CFG->wwwroot.'/mod/checklist/images/osce_half.png" alt="'.get_string('oscemarkyhalfalt','checklist').'" />',
+                            CHECKLIST_OSCE_FAIL => '<img src="'.$CFG->wwwroot.'/mod/checklist/images/osce_fail.png" alt="'.get_string('oscemarkfailalt','checklist').'" />');
+        $oddeven = 1;
+        $keys = array_keys($table->data);
+        $lastrowkey = end($keys);
+        foreach ($table->data as $key => $row) {
+            $oddeven = $oddeven ? 0 : 1;
+            $class = '';
+            if ($key == $lastrowkey) {
+                $class = ' lastrow';
+            }
+
+            $output .= '<tr class="r'.$oddeven.$class.'">';
+            $keys2 = array_keys($row);
+            $lastkey = end($keys2);
+            foreach ($row as $key => $item) {
+                if ($table->skip[$key]) {
+                    continue;
+                }
+                if ($key == 0) {
+                    // First item is the name
+                    $output .= '<td style=" text-align: left; width: '.$table->size[0].';" class="cell c0">'.$item.'</td>';
+                } else {
+                    $size = $table->size[$key];
+                    $img = '&nbsp;';
+                    $cellclass = 'cell c'.$key.' level'.$table->level[$key];
+                    //list($teachermark, $studentmark, $heading, $userid, $checkid) = $item;
+					list($oscemark, $studentmark, $heading, $userid, $checkid, $oscetimestamp) = $item;//TDMU
+                    if ($heading) {
+                        $output .= '<td style=" text-align: center; width: '.$size.';" class="cell c'.$key.' reportheading">&nbsp;</td>';
+                    } else {
+                        if ($showteachermark) {
+                            if ($oscemark == CHECKLIST_OSCE_FULL) {
+                                $cellclass .= '-checked';
+                                $img = $teacherimg[$oscemark];
+								$img .= '<div class="itemteacherdate">'.userdate($oscetimestamp, get_string('strftimedatetimeshort')).'</div>';//TDMU
+                            } elseif ($oscemark == CHECKLIST_OSCE_FAIL) {
+                                $cellclass .= '-unchecked';
+                                $img = $teacherimg[$oscemark];
+								$img .= '<div class="itemteacherdate">'.userdate($oscetimestamp, get_string('strftimedatetimeshort')).'</div>';//TDMU
+                            } elseif ($oscemark == CHECKLIST_OSCE_HALF) {
+                                $cellclass .= '-halfchecked';
+                                $img = $teacherimg[$oscemark];
+								$img .= '<div class="itemteacherdate">'.userdate($oscetimestamp, get_string('strftimedatetimeshort')).'</div>';//TDMU
+                            } else {
+                                $img = $teacherimg[CHECKLIST_OSCE_UNDECIDED];
+                            }
+
+                            if ($editchecks) {
+                                if ($teachermarklocked && $oscemark == CHECKLIST_OSCE_FULL || $userid == $USER->id) {
+                                    $disabled = 'disabled="disabled" ';
+                                } else {
+                                    $disabled = '';
+                                }
+
+                                $selu = ($oscemark == CHECKLIST_OSCE_UNDECIDED) ? 'selected="selected" ' : '';
+                                $self = ($oscemark == CHECKLIST_OSCE_FULL) ? 'selected="selected" ' : '';
+								$selh = ($oscemark == CHECKLIST_OSCE_HALF) ? 'selected="selected" ' : '';
+                                $seln = ($oscemark == CHECKLIST_OSCE_FAIL) ? 'selected="selected" ' : '';
+
+                                $img = '<select name="items['.$checkid.':'.$userid.']" '.$disabled.' class="tablecol_'.$key.'">';//TDMU: aded class name wich contain column numer
+                                $img .= '<option value="'.CHECKLIST_OSCE_UNDECIDED.'" '.$selu.'></option>';
+                                $img .= '<option value="'.CHECKLIST_OSCE_FULL.'" '.$self.'>'.get_string('oscemarkfull','checklist').'</option>';
+								$img .= '<option value="'.CHECKLIST_OSCE_HALF.'" '.$selh.'>'.get_string('oscemarkhalf','checklist').'</option>';
+                                $img .= '<option value="'.CHECKLIST_OSCE_FAIL.'" '.$seln.'>'.get_string('oscemarkfail','checklist').'</option>';
                                 $img .= '</select>';
                             }
                         }
@@ -2199,6 +3068,39 @@ class checklist_class {
             $this->get_items();
         }
     }
+	
+	//TDMU-4 OSKI
+	function process_oscereport_actions() {
+        global $SESSION;
+
+        $this->showoptional = true;
+        $this->sortby = optional_param('sortby', 'firstasc', PARAM_TEXT);
+
+        $savenext = optional_param('savenext', false, PARAM_TEXT);
+        $viewnext = optional_param('viewnext', false, PARAM_TEXT);
+        $action = optional_param('action', false, PARAM_TEXT);
+        if (!$action) {
+            return;
+        }
+
+        if ($action == 'hideoptional') {
+            $this->showoptional = false;
+        } else if ($action == 'updatechecks' && $this->caneditother()) {
+            if (!$viewnext) {
+                $this->updateoscearks();
+            }
+        } else if ($action == 'updateallchecks' && $this->caneditother()) {
+            $this->updatealloscemarks();
+        } else if ($action == 'toggledates') {
+            $this->toggleshowcompletiondates();
+        }
+
+        if ($viewnext || $savenext) {
+            $this->getnextuserid();
+            $this->get_items();
+        }
+    }
+	//TDMU-4 /OSKI
 
     function additem($displaytext, $userid=0, $indent=0, $position=false, $duetime=false, $moduleid=0, $optional=CHECKLIST_OPTIONAL_NO, $hidden=CHECKLIST_HIDDEN_NO) {
         $displaytext = trim($displaytext);
@@ -2847,6 +3749,115 @@ class checklist_class {
         }
     }
 
+    function updateoscearks() {
+        global $USER;
+
+        $newchecks = optional_param('items', array(), PARAM_TEXT);
+        if (!is_array($newchecks)) {
+            // Something has gone wrong, so update nothing
+            return;
+        }
+
+        $updategrades = false;
+        if ($this->checklist->teacheredit != CHECKLIST_MARKING_STUDENT) {
+            if ($this->userid != $USER->id) {
+                if (!$student = get_record('user', 'id', $this->userid)) {
+                    error('No such user!');
+                }
+                $info = addslashes($this->checklist->name).' ('.fullname($student, true).')';
+                add_to_log($this->course->id, 'checklist', 'update checks', "report.php?id={$this->cm->id}&studentid={$this->userid}", $info, $this->cm->id);
+
+                $teachermarklocked = $this->checklist->lockteachermarks && !has_capability('mod/checklist:updatelocked', $this->context);
+
+                foreach ($newchecks as $newcheck) {
+                    list($itemid, $newval) = explode(':',$newcheck, 2);
+
+                    if (isset($this->items[$itemid])) {
+                        $item =& $this->items[$itemid];
+
+                        if ($teachermarklocked && ($item->oscemark == CHECKLIST_OSCE_FULL || $item->oscemark == CHECKLIST_OSCE_HALF)) {
+                            continue; // Does not have permission to update marks that are already '1,0' or '0,5'
+                        }
+                        if ($newval != $item->oscemark) {
+                            $updategrades = true;
+
+                            $newcheck = new stdClass;
+                            $newcheck->oscetimestamp = time();
+                            $newcheck->oscemark = $newval;
+							//TDMU:teacher
+							$newcheck->osceteacherid = $USER->id;
+
+                            $item->oscemark = $newcheck->oscemark;
+                            $item->oscetimestamp = $newcheck->oscetimestamp;
+							//TDMU:teacher
+							$item->osceteacherid = $newcheck->osceteacherid;
+
+                            $oldcheck = get_record_select('checklist_check', 'item = '.$item->id.' AND userid = '.$this->userid);
+                            if ($oldcheck) {
+                                $newcheck->id = $oldcheck->id;
+                                update_record('checklist_check', $newcheck);
+                            } else {
+                                $newcheck->item = $itemid;
+                                $newcheck->userid = $this->userid;
+                                $newcheck->id = insert_record('checklist_check', $newcheck);
+                            }
+                        }
+                    }
+                }
+				//TDMU-4 disabled
+				/*
+                if ($updategrades) {
+                    checklist_update_grades($this->checklist, $this->userid);
+                }
+				*/
+            }
+        }
+
+        $newcomments = optional_param('teachercomment', false, PARAM_TEXT);
+        if (!$this->checklist->teachercomments || !$newcomments || !is_array($newcomments)) {
+            return;
+        }
+
+        $itemids = implode(',',array_keys($this->items));
+        $commentsunsorted = get_records_select('checklist_comment',"userid = {$this->userid} AND itemid IN ({$itemids})");
+        $comments = array();
+        if ($commentsunsorted) {
+            foreach ($commentsunsorted as $comment) {
+                $comments[$comment->itemid] = $comment;
+            }
+        }
+        foreach ($newcomments as $itemid => $newcomment) {
+            $newcomment = trim($newcomment);
+            if ($newcomment == '') {
+                if (array_key_exists($itemid, $comments)) {
+                    delete_records('checklist_comment', 'id', $comments[$itemid]->id);
+                    unset($comments[$itemid]); // Should never be needed, but just in case...
+                }
+            } else {
+                if (array_key_exists($itemid, $comments)) {
+                    if ($comments[$itemid]->text != $newcomment) {
+                        $updatecomment = new stdClass;
+                        $updatecomment->id = $comments[$itemid]->id;
+                        $updatecomment->userid = $this->userid;
+                        $updatecomment->itemid = $itemid;
+                        $updatecomment->commentby = $USER->id;
+                        $updatecomment->text = $newcomment;
+
+                        update_record('checklist_comment',$updatecomment);
+                    }
+                } else {
+                    $addcomment = new stdClass;
+                    $addcomment->itemid = $itemid;
+                    $addcomment->userid = $this->userid;
+                    $addcomment->commentby = $USER->id;
+                    $addcomment->text = $newcomment;
+
+                    insert_record('checklist_comment',$addcomment);
+                }
+            }
+        }
+    }
+
     function updateallteachermarks() {
         global $USER;
 
@@ -2938,8 +3949,99 @@ class checklist_class {
                 checklist_update_grades($this->checklist, $userid);
             }
         }
-		//TDMU-there need disable editing!???may be...
-		
+    }
+
+    function updatealloscemarks() {
+        global $USER;
+
+        if ($this->checklist->teacheredit == CHECKLIST_MARKING_STUDENT) {
+            // Student only lists do not have teacher marks to update
+            return;
+        }
+
+        $checkdata = optional_param('items', array(), PARAM_INT);
+        if (!is_array($checkdata)) {
+            // Something has gone wrong, so update nothing
+            return;
+        }
+
+        $userchecks = array();
+        foreach ($checkdata as $item => $val) {
+            if ($val != CHECKLIST_OSCE_FULL && $val != CHECKLIST_OSCE_HALF && $val != CHECKLIST_OSCE_FAIL && $val != CHECKLIST_OSCE_UNDECIDED) {
+                continue; // Invalid value
+            }
+
+            $details = explode(':', $item);
+            if (count($details) != 2) {
+                continue; // Malformed key
+            }
+            $itemid = intval($details[0]);
+            $userid = intval($details[1]);
+            if (!$itemid || !$userid) {
+                continue;
+            }
+            if ($userid == $USER->id) {
+                continue; // Not allowed to update own teachermarks
+            }
+            if (!array_key_exists($itemid, $this->items)) {
+                continue; // Item is not part of this checklist
+            }
+            if (!array_key_exists($userid, $userchecks)) {
+                $userchecks[$userid] = array();
+            }
+            $userchecks[$userid][$itemid] = $val;
+        }
+
+        if (empty($userchecks)) {
+            return;
+        }
+
+        $teachermarklocked = $this->checklist->lockteachermarks && !has_capability('mod/checklist:updatelocked', $this->context);
+
+        foreach ($userchecks as $userid => $items) {
+            $currentchecks = get_records_select('checklist_check', "userid = $userid AND item in (".implode(',', array_keys($items)).")", '', 'item, id, oscemark');
+            $updategrades = false;
+            foreach ($items as $itemid => $val) {
+                if (!$currentchecks || !array_key_exists($itemid, $currentchecks)) {
+                    if ($val == CHECKLIST_OSCE_UNDECIDED) {
+                        continue; // Do not create an entry for blank marks
+                    }
+
+                    // No entry for this item - need to create it
+                    $newcheck = new stdClass;
+                    $newcheck->item = $itemid;
+                    $newcheck->userid = $userid;
+                    $newcheck->oscemark = $val;
+                    $newcheck->oscetimestamp = time();
+					//TDMU:teacher
+					$newcheck->osceteacherid = $USER->id;
+										
+                    $newcheck->usertimestamp = 0;
+
+
+                    insert_record('checklist_check', $newcheck);
+                    $updategrades = true;
+
+                } else if ($currentchecks[$itemid]->oscemark != $val) {
+                    if ($teachermarklocked && $currentchecks[$itemid]->oscemark == CHECKLIST_TEACHERMARK_YES) {
+                        continue;
+                    }
+
+                    $updcheck = new stdClass;
+                    $updcheck->id = $currentchecks[$itemid]->id;
+                    $updcheck->oscemark = $val;
+                    $updcheck->oscetimestamp = time();
+					//TDMU:teacher
+					$updcheck->osceteacherid = $USER->id;					
+
+                    update_record('checklist_check', $updcheck);
+                    $updategrades = true;
+                }
+            }
+            if ($updategrades) {
+         ///       checklist_update_grades($this->checklist, $userid);
+            }
+        }
     }
 
     function update_complete_scores() {

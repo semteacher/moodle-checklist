@@ -48,6 +48,18 @@ $string['checklistintro'] = 'Introduction';
 $string['checklistsettings'] = 'Settings';
 
 $string['checks'] = 'Check marks';
+
+//TDMU-begin classbook export strings
+$string['classbookexportlnk'] = 'Export classbook';
+$string['classbookoredrnum'] = 'N/N';
+$string['classbookcheckcoltitle'] = 'Date/signature';
+$string['classbooklevelmasttitle'] = 'Level of mastering';
+$string['classbookprakskilltitle'] = 'Practice Skill name(s)';
+$string['classbookpassed'] = 'Passed';
+$string['classbookfailed'] = 'Failed';
+$string['classbookdoned'] = 'Doned';
+//TDMU-end classbook export strings
+
 $string['comments'] = 'Comments';
 $string['completiongradehelp'] = 'Completion grades are raw scores, not percentages';
 $string['configallowmodulelinks'] = 'Allow checklist items to be linked to other modules (may slow down the editing of checklists)';
@@ -58,7 +70,7 @@ $string['deleteitem'] = 'Delete this item';
 
 $string['duedatesoncalendar'] = 'Add due dates to calendar';
 
-$string['edit'] = 'Edit checklist';
+$string['edit'] = 'Edit Checklist';
 $string['editchecks'] = 'Edit checks';
 $string['editdatesstart'] = 'Edit dates';
 $string['editdatesstop'] = 'Stop editing dates';
@@ -99,6 +111,21 @@ $string['moveitemup'] = 'Move item up';
 
 $string['noitems'] = 'No items in the checklist';
 
+//TDMU-4 OSKI marks text
+$string['osce'] = 'OSCE Marks';
+$string['oscesettings'] = 'OSCE Settings';
+$string['osceallowed'] = 'Enable OSCE Marks';
+$string['oscemarkundecided'] = 'Teacher has not yet marked this OSCE item';
+$string['oscemarkfullalt'] = 'Teacher states that you have fully completed this OSCE item';
+$string['oscemarkyhalfalt'] = 'Teacher states that you have half completed this OSCE item';
+$string['oscemarkfailalt'] = 'Teacher states that you have NOT completed this OSCE item!';
+$string['oscemarkfull'] = '1,0';
+$string['oscemarkhalf'] = '0,5';
+$string['oscemarkfail'] = '0,0';
+$string['oscemarksedit'] = 'Edit marks';
+$string['oscemarksfor'] = 'OSCE Marks for';
+$string['oscetoggledates'] = 'Toggle OSCE marks authors/dates';
+
 $string['optionalitem'] = 'This item is optional';
 $string['optionalhide'] = 'Hide optional items';
 $string['optionalshow'] = 'Show optional items';
@@ -108,7 +135,10 @@ $string['percentcompleteall'] = 'All items';
 $string['preview'] = 'Preview';
 $string['progress'] = 'Progress';
 
-$string['report'] = 'View Progress';
+//TDMU - title for column select control
+$string['putchecksforvisible'] = 'For shown students:';
+
+$string['report'] = 'Checklist Progress';
 $string['reporttablesummary'] = 'Table showing the items on the checklist that each student has completed';
 
 $string['removeauto'] = 'Remove course module items';
@@ -136,8 +166,9 @@ $string['teacheralongsidecheck'] = 'Student and teacher';
 
 //TDMU: title for teacher name field
 $string['teacherwhocheckthis'] = 'Checked by';
+$string['teacherwhomarkosce'] = 'Marked by';
 
-$string['toggledates'] = 'Toggle checkmark authors/dates';
+$string['toggledates'] = 'Toggle checkmarks authors/dates';
 
 $string['theme'] = 'Checklist display theme';
 

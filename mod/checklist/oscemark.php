@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This page prints a list of all student's results
+ * This page prints a list of all student's OSCE marks
  *
- * @author  David Smith <moodle@davosmith.co.uk>
+ * @author  Andriy Semenets <semteacher@gmail.com>
  * @package mod/checklist
  */
 
@@ -46,6 +46,6 @@ require_login($course, true, $cm);
 
 $chk = new checklist_class($cm->id, $studentid, $checklist, $cm, $course);
 
-$chk->report();
+$chk->oscereport();
 
 ?>

@@ -74,6 +74,7 @@
         fwrite ($bf,full_tag("AUTOUPDATE",4,false,$checklist->autoupdate));
         fwrite ($bf,full_tag("EMAILONCOMPLETE",4,false,$checklist->emailoncomplete));
         fwrite ($bf,full_tag("LOCKTEACHERMARKS",4,false,$checklist->lockteachermarks));
+		fwrite ($bf,full_tag("OSCEALLOWED",4,false,$checklist->osceallowed));
 
         $status = backup_checklist_items($bf,$preferences,$checklist->id);
 
@@ -169,6 +170,9 @@
                 if ($status) $status = fwrite($bf, full_tag("TEACHERTIMESTAMP",9,false,$check->teachertimestamp));
 				//TDMU:
 				if ($status) $status = fwrite($bf, full_tag("TEACHERID",9,false,$check->teacherid));
+				if ($status) $status = fwrite($bf, full_tag("OSCEMARK",9,false,$check->	oscemark));
+				if ($status) $status = fwrite($bf, full_tag("OSCETIMESTAMP",9,false,$check->oscetimestamp));
+				if ($status) $status = fwrite($bf, full_tag("OSCETEACHERID",9,false,$check->osceteacherid));
 		        if ($status) $status = fwrite($bf, end_tag("CHECK", 8, true));
 		    }
 

@@ -112,19 +112,19 @@ $string['moveitemup'] = 'Перемістити пункт догори';
 $string['noitems'] = 'В контрольному списку немає пунктів';
 
 //TDMU-4 OSKI marks text
-$string['osce'] = 'Оцінки за ОСКІ';
-$string['oscesettings'] = 'Налаштування ОСКІ';
-$string['osceallowed'] = 'Увімкнути оцінки за ОСКІ';
-$string['oscemarkundecided'] = 'Ви ще не здавали цей навик ОСКІ';
-$string['oscemarkfullalt'] = 'Ви виконали цей навик ОСКІ відмінно';
-$string['oscemarkyhalfalt'] = 'Ви виконали цей навик ОСКІ задовільно';
-$string['oscemarkfailalt'] = 'Ви не виконали цей навик ОСКІ!';
+$string['osce'] = 'Оцінки за ОСКІ/ОСПІ';
+$string['oscesettings'] = 'Налаштування ОСКІ/ОСПІ';
+$string['osceallowed'] = 'Увімкнути оцінки за ОСКІ/ОСПІ';
+$string['oscemarkundecided'] = 'Ви ще не здавали цей навик ОСКІ/ОСПІ';
+$string['oscemarkfullalt'] = 'Ви виконали цей навик ОСКІ/ОСПІ відмінно';
+$string['oscemarkyhalfalt'] = 'Ви виконали цей навик ОСКІ/ОСПІ задовільно';
+$string['oscemarkfailalt'] = 'Ви не виконали цей навик ОСКІ/ОСПІ!';
 $string['oscemarkfull'] = '1,0';
 $string['oscemarkhalf'] = '0,5';
 $string['oscemarkfail'] = '0,0';
 $string['oscemarksedit'] = 'Редагувати оцінки';
-$string['oscemarksfor'] = 'Оцінки за ОСКІ для';
-$string['oscetoggledates'] = 'Показати/приховати авторів і дати оцінок за ОСКІ';
+$string['oscemarksfor'] = 'Оцінки за ОСКІ/ОСПІ для';
+$string['oscetoggledates'] = 'Показати/приховати авторів і дати оцінок за ОСКІ/ОСПІ';
 
 $string['optionalitem'] = 'Цей пункт є необов\'язковим';
 $string['optionalhide'] = 'Сховати необов\'язкові пункти';

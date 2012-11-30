@@ -112,19 +112,19 @@ $string['moveitemup'] = 'Move item up';
 $string['noitems'] = 'No items in the checklist';
 
 //TDMU-4 OSKI marks text
-$string['osce'] = 'OSCE Marks';
-$string['oscesettings'] = 'OSCE Settings';
-$string['osceallowed'] = 'Enable OSCE Marks';
-$string['oscemarkundecided'] = 'Teacher has not yet marked this OSCE item';
-$string['oscemarkfullalt'] = 'Teacher states that you have fully completed this OSCE item';
-$string['oscemarkyhalfalt'] = 'Teacher states that you have half completed this OSCE item';
-$string['oscemarkfailalt'] = 'Teacher states that you have NOT completed this OSCE item!';
+$string['osce'] = 'OSCE/OSPE Marks';
+$string['oscesettings'] = 'OSCE/OSPE Settings';
+$string['osceallowed'] = 'Enable OSCE/OSPE Marks';
+$string['oscemarkundecided'] = 'Teacher has not yet marked this OSCE/OSPE item';
+$string['oscemarkfullalt'] = 'Teacher states that you have fully completed this OSCE/OSPE item';
+$string['oscemarkyhalfalt'] = 'Teacher states that you have half completed this OSCE/OSPE item';
+$string['oscemarkfailalt'] = 'Teacher states that you have NOT completed this OSCE/OSPE item!';
 $string['oscemarkfull'] = '1,0';
 $string['oscemarkhalf'] = '0,5';
 $string['oscemarkfail'] = '0,0';
 $string['oscemarksedit'] = 'Edit marks';
-$string['oscemarksfor'] = 'OSCE Marks for';
-$string['oscetoggledates'] = 'Toggle OSCE marks authors/dates';
+$string['oscemarksfor'] = 'OSCE/OSPE Marks for';
+$string['oscetoggledates'] = 'Toggle OSCE/OSPE marks authors/dates';
 
 $string['optionalitem'] = 'This item is optional';
 $string['optionalhide'] = 'Hide optional items';

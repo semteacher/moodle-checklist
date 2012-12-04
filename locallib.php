@@ -1009,9 +1009,9 @@ class checklist_class {
                     if ($item->itemoptional != CHECKLIST_OPTIONAL_HEADING) {
                         if ($showteachermark && $item->teachermark != CHECKLIST_TEACHERMARK_UNDECIDED && $item->teachertimestamp) {
                             if ($item->teachername) {
-                                echo '<span class="itemteachername" title="'.$strteachername.'">&nbsp;'.get_string('teacherwhocheckthis','checklist').'<a href="'.$CFG->wwwroot.'/user/view.php?id='.$item->teacherid.'&amp;course='.$this->course->id.'">'.$item->teachername.'</a></span>';//@TDMU-01 - teachername work as url
+                                echo '<span class="itemteachername" title="'.$strteachername.'">'.get_string('teacherwhocheckthis','checklist').'<a href="'.$CFG->wwwroot.'/user/view.php?id='.$item->teacherid.'&amp;course='.$this->course->id.'">'.$item->teachername.'</a></span>';//@TDMU-01 - teachername work as url
                             }
-                            echo '<span class="itemteacherdate" title="'.$strteacherdate.'">&nbsp;'.userdate($item->teachertimestamp, get_string('strftimedatetimeshort')).'</span>';//@TDMU-01 - backspase adedd
+                            echo '<span class="itemteacherdate" title="'.$strteacherdate.'">'.userdate($item->teachertimestamp, get_string('strftimedatetimeshort')).'</span>';
                         }
                         if ($showcheckbox && $item->checked && $item->usertimestamp) {
                             echo '<span class="itemuserdate" title="'.$struserdate.'">'.userdate($item->usertimestamp, get_string('strftimedatetimeshort')).'</span>';

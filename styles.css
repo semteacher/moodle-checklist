@@ -72,7 +72,7 @@ ol.checklist .teachercomment {
     color: black;
     background-color: #ffffb0;
     border: solid black 1px;
-    margin: 0 0 0 20px;
+    margin: 0 5px 0 5px;
 }
 
 ol.checklist .itemauto.itemdisabled {
@@ -86,25 +86,22 @@ ol.checklist .itemauto {
 
 ol.checklist li .itemuserdate {
     background-color: #b0ffb0;
-    position: absolute;
-    width: 10em;
-    left: 75%;
+    border: solid black 1px;
+    margin: 0 5px 0 5px;
     zindex: 100;
 }
 
 ol.checklist li .itemteacherdate {
     background-color: #b0ffb0;
-    position: absolute;
-    width: 10em;
-    left: 60%;
+    border: solid black 1px;
+    margin: 0 5px 0 5px;
     zindex: 100;
 }
 
 ol.checklist li .itemteachername {
     background-color: #b0ffb0;
-    position: absolute;
-    width: 10em;
-    left: 45%;
+    border: solid black 1px;
+    margin: 0 5px 0 5px;
     zindex: 100;
 }
 

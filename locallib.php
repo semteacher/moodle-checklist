@@ -25,7 +25,7 @@
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
 
-define("CHECKLIST_TEXT_INPUT_WIDTH", 45);
+define("CHECKLIST_TEXT_INPUT_WIDTH", 60);//@TDMU-01
 define("CHECKLIST_OPTIONAL_NO", 0);
 define("CHECKLIST_OPTIONAL_YES", 1);
 define("CHECKLIST_OPTIONAL_HEADING", 2);
@@ -749,7 +749,7 @@ class checklist_class {
         $thispage = new moodle_url('/mod/checklist/view.php', array('id' => $this->cm->id) );
 
         $teachermarklocked = false;
-        $showcompletiondates = false;
+        $showcompletiondates = true;//@TDMU-01
         if ($viewother) {
             if ($comments) {
                 $editcomments = optional_param('editcomments', false, PARAM_BOOL);
@@ -986,7 +986,7 @@ class checklist_class {
                         echo '<input class="checklistitem'.$checkclass.'" type="checkbox" name="items[]" id='.$itemname.$checked.' value="'.$item->id.'" />';
                     }
                 }
-                echo '<label for='.$itemname.$optional.'>'.s($item->displaytext).'</label>';
+                echo '<label for='.$itemname.$optional.'>&nbsp;'.s($item->displaytext).'</label>';//@TDMU-01
                 if (isset($item->modulelink)) {
                     echo '&nbsp;<a href="'.$item->modulelink.'"><img src="'.$OUTPUT->pix_url('follow_link','checklist').'" alt="'.get_string('linktomodule','checklist').'" /></a>';
                 }
@@ -1009,7 +1009,7 @@ class checklist_class {
                     if ($item->itemoptional != CHECKLIST_OPTIONAL_HEADING) {
                         if ($showteachermark && $item->teachermark != CHECKLIST_TEACHERMARK_UNDECIDED && $item->teachertimestamp) {
                             if ($item->teachername) {
-                                echo '<span class="itemteachername" title="'.$strteachername.'">'.$item->teachername.'</span>';
+                                echo '<span class="itemteachername" title="'.$strteachername.'"><a href="'.$CFG->wwwroot.'/user/view.php?id='.$item->teacherid.'&amp;course='.$this->course->id.'">'.$item->teachername.'</a></span>';//@TDMU-01 - teachername work as url
                             }
                             echo '<span class="itemteacherdate" title="'.$strteacherdate.'">'.userdate($item->teachertimestamp, get_string('strftimedatetimeshort')).'</span>';
                         }
@@ -1075,7 +1075,8 @@ class checklist_class {
                                 }
                                 echo '<form style="display:inline" action="'.$thisitemurl->out_omit_querystring().'" method="post">';
                                 echo html_writer::input_hidden_params($thisitemurl);
-                                echo '<input type="text" size="'.CHECKLIST_TEXT_INPUT_WIDTH.'" name="displaytext" value="'.s($text).'" id="updateitembox" />';
+                                //echo '<input type="text" size="'.CHECKLIST_TEXT_INPUT_WIDTH.'" name="displaytext" value="'.s($text).'" id="updateitembox" />';
+                                echo '<textarea id="updateitembox" name="displaytext"  rows="2" cols="'.CHECKLIST_TEXT_INPUT_WIDTH.'">'.s($text).'</textarea>';//@TDMU-01
                                 echo '<input type="submit" name="updateitem" value="'.get_string('updateitem','checklist').'" />';
                                 echo '<br />';
                                 echo '<textarea name="displaytextnote" rows="3" cols="25">'.s($note).'</textarea>';
@@ -1137,6 +1138,7 @@ class checklist_class {
                         echo '<input type="checkbox" disabled="disabled" />';
                     }
                     echo '<input type="text" size="'.CHECKLIST_TEXT_INPUT_WIDTH.'" name="displaytext" value="" id="additembox" />';
+                    //echo '<textarea id="additembox" name="displaytext"  rows="2" cols="'.CHECKLIST_TEXT_INPUT_WIDTH.'" value="" />';//@TDMU-01
                     echo '<input type="submit" name="additem" value="'.get_string('additem','checklist').'" />';
                     echo '<br />';
                     echo '<textarea name="displaytextnote" rows="3" cols="25"></textarea>';
@@ -1358,7 +1360,8 @@ class checklist_class {
 
                 if (isset($item->editme)) {
                     echo '<form style="display:inline" action="'.$thispage->out_omit_querystring().'" method="post">';
-                    echo '<input type="text" size="'.CHECKLIST_TEXT_INPUT_WIDTH.'" name="displaytext" value="'.s($item->displaytext).'" id="updateitembox" />';
+                    //echo '<input type="text" size="'.CHECKLIST_TEXT_INPUT_WIDTH.'" name="displaytext" value="'.s($item->displaytext).'" id="updateitembox" />';
+                    echo '<textarea id="updateitembox" name="displaytext"  rows="2" cols="'.CHECKLIST_TEXT_INPUT_WIDTH.'">'.s($item->displaytext).'</textarea>';//@TDMU-01
                     echo '<input type="hidden" name="action" value="updateitem" />';
                     echo html_writer::input_hidden_params($thispage);
                     if ($this->editdates) {
@@ -1458,6 +1461,7 @@ class checklist_class {
                     echo '<input type="hidden" name="indent" value="'.$item->indent.'" />';
                     echo '<img src="'.$OUTPUT->pix_url('tick_box','checklist').'" /> ';
                     echo '<input type="text" size="'.CHECKLIST_TEXT_INPUT_WIDTH.'" name="displaytext" value="" id="additembox" />';
+                    //echo '<textarea id="additembox" name="displaytext"  rows="2" cols="'.CHECKLIST_TEXT_INPUT_WIDTH.'" value="" />';//@TDMU-01
                     if ($this->editdates) {
                         $this->print_edit_date();
                     }
@@ -1491,6 +1495,7 @@ class checklist_class {
             echo '<input type="hidden" name="action" value="additem" />';
             echo '<input type="hidden" name="indent" value="'.$currindent.'" />';
             echo '<input type="text" size="'.CHECKLIST_TEXT_INPUT_WIDTH.'" name="displaytext" value="" id="additembox" />';
+            //echo '<textarea id="additembox" name="displaytext"  rows="2" cols="'.CHECKLIST_TEXT_INPUT_WIDTH.'" value="" />';//@TDMU-01
             if ($this->editdates) {
                 $this->print_edit_date();
             }
@@ -1744,7 +1749,8 @@ class checklist_class {
 
                     $row[] = $userlink.$vslink;
 
-                    $sql = 'SELECT i.id, i.itemoptional, i.hidden, c.usertimestamp, c.teachermark FROM {checklist_item} i LEFT JOIN {checklist_check} c ';
+                    //$sql = 'SELECT i.id, i.itemoptional, i.hidden, c.usertimestamp, c.teachermark FROM {checklist_item} i LEFT JOIN {checklist_check} c ';
+                    $sql = 'SELECT i.id, i.itemoptional, i.hidden, c.usertimestamp, c.teachermark, c.teacherid, c.teachertimestamp FROM {checklist_item} i LEFT JOIN {checklist_check} c ';//@TDMU-01
                     $sql .= 'ON (i.id = c.item AND c.userid = ? ) WHERE i.checklist = ? AND i.userid=0 ORDER BY i.position';
                     $checks = $DB->get_records_sql($sql, array($auser->id, $this->checklist->id) );
 
@@ -1754,12 +1760,12 @@ class checklist_class {
                         }
 
                         if ($check->itemoptional == CHECKLIST_OPTIONAL_HEADING) {
-                            $row[] = array(false, false, true, 0, 0);
+                            $row[] = array(false, false, true, 0, 0, 0);//@TDMU-01: added last paramether
                         } else {
                             if ($check->usertimestamp > 0) {
-                                $row[] = array($check->teachermark,true,false, $auser->id, $check->id);
+                                $row[] = array($check->teachermark,true,false, $auser->id, $check->id, 0);//@TDMU-01: added last paramether
                             } else {
-                                $row[] = array($check->teachermark,false,false, $auser->id, $check->id);
+                                $row[] = array($check->teachermark,false,false, $auser->id, $check->id, $check->teachertimestamp); //@TDMU-01: added last paramether
                             }
                         }
                     }
@@ -1777,6 +1783,7 @@ class checklist_class {
             echo '</div>';
 
             if ($editchecks) {
+                echo '<input type="hidden" name="editchecks" value="off" />';//@TDMU-01 - after save - return to view mode!
                 echo '<input type="submit" name="submit" value="'.get_string('savechecks','checklist').'" />';
                 echo '</form>';
             }
@@ -1842,7 +1849,8 @@ class checklist_class {
                     $size = $table->size[$key];
                     $img = '&nbsp;';
                     $cellclass = 'level'.$table->level[$key];
-                    list($teachermark, $studentmark, $heading, $userid, $checkid) = $item;
+                    //list($teachermark, $studentmark, $heading, $userid, $checkid) = $item;
+                    list($teachermark, $studentmark, $heading, $userid, $checkid, $teachertimestamp) = $item;//@TDMU-01
                     if ($heading) {
                         $output .= '<td style=" text-align: center; width: '.$size.';" class="cell c'.$key.' reportheading">&nbsp;</td>';
                     } else {
@@ -1850,9 +1858,11 @@ class checklist_class {
                             if ($teachermark == CHECKLIST_TEACHERMARK_YES) {
                                 $cellclass .= '-checked';
                                 $img = $teacherimg[$teachermark];
+                                $img .= '<div class="itemteacherdate">'.userdate($teachertimestamp, get_string('strftimedatetimeshort')).'</div>';//TDMU
                             } else if ($teachermark == CHECKLIST_TEACHERMARK_NO) {
                                 $cellclass .= '-unchecked';
                                 $img = $teacherimg[$teachermark];
+                                $img .= '<div class="itemteacherdate">'.userdate($teachertimestamp, get_string('strftimedatetimeshort')).'</div>';//TDMU
                             } else {
                                 $img = $teacherimg[CHECKLIST_TEACHERMARK_UNDECIDED];
                             }
@@ -2078,7 +2088,7 @@ class checklist_class {
 
         if (!isset($SESSION->checklist_report)) {
             $settings = new stdClass;
-            $settings->showcompletiondates = false;
+            $settings->showcompletiondates = true;//@TDMU-01
             $settings->showoptional = true;
             $settings->showprogressbars = false;
             $settings->sortby = 'firstasc';

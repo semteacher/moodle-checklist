@@ -57,8 +57,9 @@ class mod_checklist_mod_form extends moodleform_mod {
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+        $mform->setDefault('name', get_string('checklistdefaultname', 'checklist'));//@TDMU-01 default name for the cheklist
 
-        $this->add_intro_editor(true, get_string('checklistintro', 'checklist'));
+        $this->add_intro_editor(false, get_string('checklistintro', 'checklist'));//@TDMU-01 intro is not required
 
 //-------------------------------------------------------------------------------
 
@@ -72,6 +73,7 @@ class mod_checklist_mod_form extends moodleform_mod {
         $teditoptions[CHECKLIST_MARKING_TEACHER] = get_string('teacheroverwritecheck', 'checklist');
         $teditoptions[CHECKLIST_MARKING_BOTH] = get_string('teacheralongsidecheck', 'checklist');
         $mform->addElement('select', 'teacheredit', get_string('teacheredit', 'checklist'), $teditoptions);
+        $mform->setDefault('teacheredit', 1);//@TDMU-01 by default only teacher can mark checklist item
 
         $mform->addElement('select', 'duedatesoncalendar', get_string('duedatesoncalendar', 'checklist'), $ynoptions);
         $mform->setDefault('duedatesoncalendar', 0);

@@ -52,6 +52,9 @@ $string['changetextcolour'] = 'Next text colour';
 $string['checkeditemsdeleted'] = 'Checked items deleted';
 
 $string['checklist'] = 'checklist';
+
+$string['checklistdefaultname'] = 'Practice Skills matricule list';//@TDMU-01
+
 $string['pluginadministration'] = 'Checklist administration';
 
 $string['checklist:addinstance'] = 'Add a new checklist';
@@ -141,6 +144,8 @@ $string['pluginname'] = 'Checklist';
 $string['preview'] = 'Preview';
 $string['progress'] = 'Progress';
 
+$string['putchecksforvisible'] = 'For all shown students:';//@TDMU-01 title for column select control
+
 $string['removeauto'] = 'Remove course module items';
 
 $string['report'] = 'View Progress';
@@ -170,6 +175,8 @@ $string['teachermarkno'] = 'Teacher states that you have NOT completed this';
 $string['teachernoteditcheck'] = 'Student only';
 $string['teacheroverwritecheck'] = 'Teacher only';
 $string['teacheralongsidecheck'] = 'Student and teacher';
+
+$string['teacherwhocheckthis'] = 'Checked by ';//@TDMU-01
 
 $string['toggledates'] = 'Toggle names & dates';
 

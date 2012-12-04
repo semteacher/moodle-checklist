@@ -108,6 +108,8 @@ $string['percentcompleteall'] = 'Всі пункти';
 $string['preview'] = 'Попередній перегляд';
 $string['progress'] = 'Здобутки';
 
+$string['putchecksforvisible'] = 'Всім показаним студентам:';//@TDMU-01 title for column select control
+
 $string['report'] = 'Переглянути здобутки';
 $string['reporttablesummary'] = 'Таблиця показує пункти контрольного списку, виконані кожним студентом';
 

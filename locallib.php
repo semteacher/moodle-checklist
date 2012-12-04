@@ -986,7 +986,7 @@ class checklist_class {
                         echo '<input class="checklistitem'.$checkclass.'" type="checkbox" name="items[]" id='.$itemname.$checked.' value="'.$item->id.'" />';
                     }
                 }
-                echo '<label for='.$itemname.$optional.'>&nbsp;'.s($item->displaytext).'</label>';//@TDMU-01
+                echo '<label for='.$itemname.$optional.'>&nbsp;'.s($item->displaytext).'</label>';//@TDMU-01 - backspase adedd
                 if (isset($item->modulelink)) {
                     echo '&nbsp;<a href="'.$item->modulelink.'"><img src="'.$OUTPUT->pix_url('follow_link','checklist').'" alt="'.get_string('linktomodule','checklist').'" /></a>';
                 }
@@ -1009,9 +1009,9 @@ class checklist_class {
                     if ($item->itemoptional != CHECKLIST_OPTIONAL_HEADING) {
                         if ($showteachermark && $item->teachermark != CHECKLIST_TEACHERMARK_UNDECIDED && $item->teachertimestamp) {
                             if ($item->teachername) {
-                                echo '<span class="itemteachername" title="'.$strteachername.'"><a href="'.$CFG->wwwroot.'/user/view.php?id='.$item->teacherid.'&amp;course='.$this->course->id.'">'.$item->teachername.'</a></span>';//@TDMU-01 - teachername work as url
+                                echo '<span class="itemteachername" title="'.$strteachername.'">&nbsp;'.get_string('teacherwhocheckthis','checklist').'<a href="'.$CFG->wwwroot.'/user/view.php?id='.$item->teacherid.'&amp;course='.$this->course->id.'">'.$item->teachername.'</a></span>';//@TDMU-01 - teachername work as url
                             }
-                            echo '<span class="itemteacherdate" title="'.$strteacherdate.'">'.userdate($item->teachertimestamp, get_string('strftimedatetimeshort')).'</span>';
+                            echo '<span class="itemteacherdate" title="'.$strteacherdate.'">&nbsp;'.userdate($item->teachertimestamp, get_string('strftimedatetimeshort')).'</span>';//@TDMU-01 - backspase adedd
                         }
                         if ($showcheckbox && $item->checked && $item->usertimestamp) {
                             echo '<span class="itemuserdate" title="'.$struserdate.'">'.userdate($item->usertimestamp, get_string('strftimedatetimeshort')).'</span>';

@@ -1534,11 +1534,13 @@ class checklist_class {
     }
 
     function view_report() {
-        global $DB, $OUTPUT;
+        global $DB, $OUTPUT, $CFG;
 
         $reportsettings = $this->get_report_settings();
 
         $editchecks = $this->caneditother() && optional_param('editchecks', false, PARAM_BOOL);
+
+        $showtdmuexportbtn = !$editchecks && !$reportsettings->showprogressbars;//TDMU-01 : "export classbook" button visible only in preview full detail mode
 
         $page = optional_param('page', 0, PARAM_INT);
         $perpage = optional_param('perpage', 30, PARAM_INT);
@@ -1557,6 +1559,9 @@ class checklist_class {
         groups_print_activity_menu($this->cm, $thisurl);
         $activegroup = groups_get_activity_group($this->cm, true);
 
+        //TDMU -01 : following script perform bulk update of the "select" controls selected value
+        echo '<script type="text/javascript">function bulk_select(el){ var elements = document.getElementsByTagName(\'select\'), sI = el.selectedIndex; for(var i = 0; i < elements.length; i++) if(elements[i].className == el.className) elements[i].selectedIndex = sI; }</script>';
+        
         echo '&nbsp;&nbsp;<form style="display: inline;" action="'.$thisurl->out_omit_querystring().'" method="get" />';
         echo html_writer::input_hidden_params($thisurl, array('action'));
         if ($reportsettings->showoptional) {
@@ -1592,6 +1597,16 @@ class checklist_class {
             echo '<input type="submit" name="submit" value="'.get_string('editchecks','checklist').'" />';
             echo '</form>';
         }
+        
+        //TDMU-01 begin "export clasbook" management block
+        if ($showtdmuexportbtn){
+            //$exporturl = $CFG->wwwroot.'/mod/checklist/exporthtml.php?id='.$this->cm->id;
+            $exporturl = $CFG->wwwroot.'/mod/checklist/exporthtml.php?id='.$this->cm->id.'&sortby='.$reportsettings->sortby.'&showoptional='.$reportsettings->showoptional.'&page='.$page.'&perpage='.$perpage;
+            echo '<div class="checklistimportexport">';
+            echo '<a href="'.$exporturl.'">'.get_string('classbookexportlnk', 'checklist').'</a>';
+            echo '</div>';
+        }
+        //TDMU-01 end "export clasbook" management block
 
         echo '<br style="clear:both"/>';
 
@@ -1820,6 +1835,37 @@ class checklist_class {
         }
         $output .= '</tr>';
 
+		//TDMU - 01 : start block - show select row for bulk change checks for visible students
+		if ($editchecks) {
+			$output .= '<tr>';		
+        	foreach ($table->head as $key => $heading) {
+            	if ($table->skip[$key]) {
+                	continue;
+            	}
+            	$size = $table->size[$key];
+            	$levelclass = ' head'.$table->level[$key];
+            	if ($key == $lastkey) {
+                	$levelclass .= ' lastcol';
+            	}
+            	$output .= '<td style=" text-align: center; width:'.$size.'" class="header c'.$key.$levelclass.'" scope="col">';
+		   		if ($key!=0) {
+                    $disabled = ($teachermarklocked && $teachermark == CHECKLIST_TEACHERMARK_YES) ? 'disabled="disabled" ' : '';
+
+                    $img1 = '<select name="bulk_selector_tablecol'.$key.'" '.$disabled.' class="tablecol_'.$key.'" onChange="bulk_select(this);">';//TDMU - class identifi aded there
+                    $img1 .= '<option value="'.CHECKLIST_TEACHERMARK_UNDECIDED.'" selected="selected"></option>';
+                    $img1 .= '<option value="'.CHECKLIST_TEACHERMARK_YES.'">'.get_string('yes').'</option>';
+                    $img1 .= '<option value="'.CHECKLIST_TEACHERMARK_NO.'">'.get_string('no').'</option>';
+                    $img1 .= '</select>';
+					
+					$output .= '<div>'.get_string('putchecksforvisible','checklist').'</div>';
+		  			$output .= '<div>'.$img1.'</div>';
+		    	}
+		    	$output .= '</td>';
+        	}
+			$output .= '</tr>';
+		}
+        //TDMU - 01 : end block - end select row for bulk change checks for visible students
+
         // Output the data
         $tickimg = '<img src="'.$OUTPUT->pix_url('/i/tick_green_big').'" alt="'.get_string('itemcomplete','checklist').'" />';
         $teacherimg = array(CHECKLIST_TEACHERMARK_UNDECIDED => '<img src="'.$OUTPUT->pix_url('empty_box','checklist').'" alt="'.get_string('teachermarkundecided','checklist').'" />',
@@ -1874,7 +1920,7 @@ class checklist_class {
                                 $sely = ($teachermark == CHECKLIST_TEACHERMARK_YES) ? 'selected="selected" ' : '';
                                 $seln = ($teachermark == CHECKLIST_TEACHERMARK_NO) ? 'selected="selected" ' : '';
 
-                                $img = '<select name="items_'.$userid.'['.$checkid.']" '.$disabled.'>';
+                                $img = '<select name="items_'.$userid.'['.$checkid.']" '.$disabled.' class="tablecol_'.$key.'">';//TDMU: aded class name wich contain column numer
                                 $img .= '<option value="'.CHECKLIST_TEACHERMARK_UNDECIDED.'" '.$selu.'></option>';
                                 $img .= '<option value="'.CHECKLIST_TEACHERMARK_YES.'" '.$sely.'>'.get_string('yes').'</option>';
                                 $img .= '<option value="'.CHECKLIST_TEACHERMARK_NO.'" '.$seln.'>'.get_string('no').'</option>';

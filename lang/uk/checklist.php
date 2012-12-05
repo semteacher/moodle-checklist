@@ -48,6 +48,18 @@ $string['checklistintro'] = 'Вступ';
 $string['checklistsettings'] = 'Налаштування';
 
 $string['checks'] = 'Контрольні відмітки';
+
+//TDMU-begin classbook export strings
+$string['classbookexportlnk'] = 'Експортувати журнал (матрикулів)';
+$string['classbookoredrnum'] = 'N/пр.';
+$string['classbookcheckcoltitle'] = 'Дата/підпис викл.';
+$string['classbooklevelmasttitle'] = 'Рівень засвоєння';
+$string['classbookprakskilltitle'] = 'Назва практичного навичку';
+$string['classbookpassed'] = 'Зарах.';
+$string['classbookfailed'] = 'Незарах.';
+$string['classbookdoned'] = 'Виконано';
+//TDMU-end classbook export strings
+
 $string['comments'] = 'Коментарі';
 $string['completiongradehelp'] = 'Кінцева оцінка не є відсотком';
 $string['configallowmodulelinks'] = 'Дозволити зв\'язувати пункти контрольного спиcку з іншими модулями (сповільнює редагування контрольного списку)';

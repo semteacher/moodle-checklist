@@ -75,6 +75,18 @@ $string['checklistintro'] = 'Introduction';
 $string['checklistsettings'] = 'Settings';
 
 $string['checks'] = 'Check marks';
+
+//TDMU-begin classbook export strings
+$string['classbookexportlnk'] = 'Export classbook';
+$string['classbookoredrnum'] = 'N/N';
+$string['classbookcheckcoltitle'] = 'Date/signature';
+$string['classbooklevelmasttitle'] = 'Level of mastering';
+$string['classbookprakskilltitle'] = 'Practice Skill name(s)';
+$string['classbookpassed'] = 'Passed';
+$string['classbookfailed'] = 'Failed';
+$string['classbookdoned'] = 'Doned';
+//TDMU-end classbook export strings
+
 $string['comments'] = 'Comments';
 
 $string['completionpercentgroup'] = 'Require checked-off';

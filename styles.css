@@ -88,21 +88,21 @@ ol.checklist li .itemuserdate {
     background-color: #b0ffb0;
     border: solid black 1px;
     margin: 0 5px 0 5px;
-    zindex: 100;
+    z-index: 100;
 }
 
 ol.checklist li .itemteacherdate {
     background-color: #b0ffb0;
     border: solid black 1px;
     margin: 0 5px 0 5px;
-    zindex: 100;
+    z-index: 100;
 }
 
 ol.checklist li .itemteachername {
     background-color: #b0ffb0;
     border: solid black 1px;
     margin: 0 5px 0 5px;
-    zindex: 100;
+    z-index: 100;
 }
 
 .checklist-itemdue {

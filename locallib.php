@@ -1607,12 +1607,6 @@ class checklist_class {
                                 }
                                 echo '<form style="display:inline" action="'.$thisitemurl->out_omit_querystring().'" method="post">';
                                 echo html_writer::input_hidden_params($thisitemurl);
-                                //echo '<form style="display:inline" action="'.$thispage.'" method="post">';
-                                //echo '<input type="hidden" name="action" value="updateitem" />';
-                                //echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
-                                //echo '<input type="hidden" name="itemid" value="'.$useritem->id.'" />';
-                                //echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
-                                //echo '<input type="text" size="'.CHECKLIST_TEXT_INPUT_WIDTH.'" name="displaytext" value="'.s($text).'" id="updateitembox" //>';
                                 echo '<textarea id="updateitembox" name="displaytext"  rows="2" cols="'.CHECKLIST_TEXT_INPUT_WIDTH.'">'.s($text).'</textarea>';//@TDMU-01
                                 echo '<input type="submit" name="updateitem" value="'.get_string('updateitem','checklist').'" />';
                                 echo '<br />';
@@ -1620,9 +1614,6 @@ class checklist_class {
                                 echo '</form>';
                                 echo '</div>';
                                 
-                                //echo '<form style="display:inline;" action="'.$thispage.'" method="get">';
-                                //echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
-                                //echo '<input type="hidden" name="useredit" value="on" />';
                                 echo '<form style="display:inline;" action="'.$thispage->out_omit_querystring().'" method="get">';
                                 echo html_writer::input_hidden_params($thispage);
                                 echo '<input type="submit" name="canceledititem" value="'.get_string('canceledititem','checklist').'" />';
@@ -1672,10 +1663,6 @@ class checklist_class {
                     
                     echo '<ol class="checklist"><li>';
                     echo '<div style="float: left;">';
-                    //echo '<form action="'.$thispage.'" method="post">';
-                    //echo '<input type="hidden" name="action" value="additem" />';
-                    //echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
-                    //echo '<input type="hidden" name="position" value="'.$item->position.'" />';
                     //echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
                     echo '<form action="'.$thispage->out_omit_querystring().'" method="post">';
                     echo html_writer::input_hidden_params($thisitemurl);
@@ -1690,9 +1677,6 @@ class checklist_class {
                     echo '</form>';
                     echo '</div>';
                     
-                    //echo '<form style="display:inline" action="'.$thispage.'" method="get">';
-                    //echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
-                    //echo '<input type="hidden" name="useredit" value="on" />';
                     echo '<form style="display:inline" action="'.$thispage->out_omit_querystring().'" method="get">';
                     echo html_writer::input_hidden_params($thispage);
                     echo '<input type="submit" name="canceledititem" value="'.get_string('canceledititem','checklist').'" />';
@@ -1738,7 +1722,6 @@ class checklist_class {
             }
         }
 
-        //print_box_end();
         echo $OUTPUT->box_end();
     }
     
@@ -2150,7 +2133,6 @@ class checklist_class {
         
         //TDMU-01 begin "export clasbook" management block
         if ($showtdmuexportbtn){
-            //$exporturl = $CFG->wwwroot.'/mod/checklist/exporthtml.php?id='.$this->cm->id;
             $exporturl = $CFG->wwwroot.'/mod/checklist/exporthtml.php?id='.$this->cm->id.'&sortby='.$reportsettings->sortby.'&showoptional='.$reportsettings->showoptional.'&page='.$page.'&perpage='.$perpage;
             echo '<div class="checklistimportexport">';
             echo '<a href="'.$exporturl.'">'.get_string('classbookexportlnk', 'checklist').'</a>';
@@ -2314,7 +2296,6 @@ class checklist_class {
 
                     $row[] = $userlink.$vslink;
 
-                    //$sql = 'SELECT i.id, i.itemoptional, i.hidden, c.usertimestamp, c.teachermark FROM {checklist_item} i LEFT JOIN {checklist_check} c ';
                     $sql = 'SELECT i.id, i.itemoptional, i.hidden, c.usertimestamp, c.teachermark, c.teacherid, c.teachertimestamp FROM {checklist_item} i LEFT JOIN {checklist_check} c ';//@TDMU-01
                     $sql .= 'ON (i.id = c.item AND c.userid = ? ) WHERE i.checklist = ? AND i.userid=0 ORDER BY i.position';
                     $checks = $DB->get_records_sql($sql, array($auser->id, $this->checklist->id) );
@@ -2445,7 +2426,6 @@ class checklist_class {
                     $size = $table->size[$key];
                     $img = '&nbsp;';
                     $cellclass = 'level'.$table->level[$key];
-                    //list($teachermark, $studentmark, $heading, $userid, $checkid) = $item;
                     list($teachermark, $studentmark, $heading, $userid, $checkid, $teachertimestamp) = $item;//@TDMU-01
                     if ($heading) {
                         $output .= '<td style=" text-align: center; width: '.$size.';" class="cell c'.$key.' reportheading">&nbsp;</td>';
@@ -2516,7 +2496,10 @@ class checklist_class {
         $page = optional_param('page', 0, PARAM_INT);
         $perpage = optional_param('perpage', 30, PARAM_INT);
         
-        $thisurl = new moodle_url('/mod/checklist/oscereport.php', array('id'=>$this->cm->id, 'sesskey'=>sesskey()) );       
+        $thisurl = new moodle_url('/mod/checklist/oscereport.php', array('id'=>$this->cm->id, 'sesskey'=>sesskey()) ); 
+        //$thisurl = $CFG->wwwroot.'/mod/checklist/oscereport.php?id='.$this->cm->id;
+		//$thisurl .= $editchecks ? '&amp;editchecks=on' : '';//TDMU-original bug! - editor was closed when next page visited-this code fix it!
+        
         if ($editchecks) { $thisurl->param('editchecks','on'); }
     
         if ($this->checklist->autoupdate && $this->checklist->autopopulate) {
@@ -2527,21 +2510,13 @@ class checklist_class {
             }
         }
 
-        //$thisurl = $CFG->wwwroot.'/mod/checklist/oscereport.php?id='.$this->cm->id;
-        //$thisurl .= $this->showoptional ? '' : '&amp;action=hideoptional';
-		//$thisurl .= $editchecks ? '&amp;editchecks=on' : '';//TDMU-original bug! - editor was closed when next page visited-this code fix it!
-        //$thisurl .= '&amp;sortby='.$this->sortby;
-
         groups_print_activity_menu($this->cm, $thisurl);
         $activegroup = groups_get_activity_group($this->cm, true);
 
         //TDMU -01 : following script perform bulk update of the "select" controls selected value
         echo '<script type="text/javascript">function bulk_select(el){ var elements = document.getElementsByTagName(\'select\'), sI = el.selectedIndex; for(var i = 0; i < elements.length; i++) if(elements[i].className == el.className) elements[i].selectedIndex = sI; }</script>';
-		//form that responce to a "show/hide optional" button
-        //echo '&nbsp;&nbsp;<form style="display: inline;" action="'.$CFG->wwwroot.'/mod/checklist/oscereport.php" method="get" />';
-        //echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
-        //echo '<input type="hidden" name="sortby" value="'.$this->sortby.'" />';
 
+		//form that responce to a "show/hide optional" button
         echo '&nbsp;&nbsp;<form style="display: inline;" action="'.$thisurl->out_omit_querystring().'" method="get" />';
         echo html_writer::input_hidden_params($thisurl, array('action'));
         if ($reportsettings->showoptional) {
@@ -2581,11 +2556,11 @@ class checklist_class {
 
 		//TDMU-3 begin block
 		if ($showtdmuexportbtn){
-			//TODO: temporarily disabled. Need a new procedure!
-		///	$exporturl = $CFG->wwwroot.'/mod/checklist/exporthtml.php?id='.$this->cm->id.'&sortby='.$this->sortby.'&showoptional='.$this->showoptional.'&page='.$page.'&perpage='.$perpage;
-        ///   	echo '<div class="checklistimportexport">';
-		///	echo '<a href="'.$exporturl.'">'.get_string('classbookexportlnk', 'checklist').'</a>';
-        ///	echo '</div>';
+		//TODO: temporarily disabled. Need a new procedure!
+		//	$exporturl = $CFG->wwwroot.'/mod/checklist/exporthtml.php?id='.$this->cm->id.'&sortby='.$this->sortby.'&showoptional='.$this->showoptional.'&page='.$page.'&perpage='.$perpage;
+        //   	echo '<div class="checklistimportexport">';
+		//	echo '<a href="'.$exporturl.'">'.get_string('classbookexportlnk', 'checklist').'</a>';
+        //	echo '</div>';
 		}
 		//TDMU-3 end block
         
@@ -2691,14 +2666,6 @@ class checklist_class {
                 foreach ($ausers as $auser) {
                     $row = array();
 
-                    //if ($this->caneditother()) {
-                    //    $vslink = ' <a href="'.$thisurl.'&amp;studentid='.$auser->id.'" ';
-                    //    $vslink .= 'alt="'.get_string('viewsinglereport','checklist').'" title="'.get_string('viewsinglereport','checklist').'" />';
-                    //    $vslink .= '<img src="'.$CFG->pixpath.'/t/preview.gif" /></a>';
-                    //} else {
-                    //    $vslink = '';
-                    //}
-                    //$userlink = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$auser->id.'&amp;course='.$this->course->id.'">'.fullname($auser).'</a>';
                     $vslink = ' <a href="'.$thisurl->out(true, array('studentid'=>$auser->id) ).'" ';
                     $vslink .= 'alt="'.get_string('viewsinglereport','checklist').'" title="'.get_string('viewsinglereport','checklist').'">';
                     $vslink .= '<img src="'.$OUTPUT->pix_url('/t/preview').'" /></a>';
@@ -2794,22 +2761,8 @@ class checklist_class {
             	$output .= '<td style=" text-align: center; width:'.$size.'" class="header c'.$key.$levelclass.'" scope="col">';
 		   		if ($key!=0) {			//TODO:need cher logic!
                     $disabled = ($teachermarklocked && ($teachermark == CHECKLIST_OSCE_FULL || $teachermark == CHECKLIST_OSCE_HALF)) ? 'disabled="disabled" ' : '';
-                    //if ($teachermarklocked && $teachermark == CHECKLIST_OSCE_FULL || $teachermark == CHECKLIST_OSCE_HALF || $userid == $USER->id) {
-                    //    $disabled = 'disabled="disabled" ';
-                    //} else {
-                    //    $disabled = '';
-                    //}
-                    
-                    //$selu = ($teachermark == CHECKLIST_OSCE_UNDECIDED) ? 'selected="selected" ' : '';
-                    //$self = ($teachermark == CHECKLIST_OSCE_FULL) ? 'selected="selected" ' : '';
-					//$selh = ($teachermark == CHECKLIST_OSCE_HALF) ? 'selected="selected" ' : '';
-                    //$seln = ($teachermark == CHECKLIST_OSCE_FAIL) ? 'selected="selected" ' : '';
 
                     $img = '<select name="bulk_selector_tablecol'.$key.'" '.$disabled.' class="tablecol_'.$key.'" onChange="bulk_select(this);">';//TDMU - class identifi aded there
-                    //$img .= '<option value="'.CHECKLIST_OSCE_UNDECIDED.'" '.$selu.'></option>';
-                    //$img .= '<option value="'.CHECKLIST_OSCE_FULL.'" '.$self.'>'.get_string('oscemarkfull','checklist').'</option>';
-					//$img .= '<option value="'.CHECKLIST_OSCE_HALF.'" '.$selh.'>'.get_string('oscemarkhalf','checklist').'</option>';
-                    //$img .= '<option value="'.CHECKLIST_OSCE_FAIL.'" '.$seln.'>'.get_string('oscemarkfail','checklist').'</option>';
                     $img .= '<option value="'.CHECKLIST_OSCE_UNDECIDED.'" selected="selected"></option>';
                     $img .= '<option value="'.CHECKLIST_OSCE_FULL.'" >'.get_string('oscemarkfull','checklist').'</option>';
 					$img .= '<option value="'.CHECKLIST_OSCE_HALF.'" >'.get_string('oscemarkhalf','checklist').'</option>';
@@ -2855,7 +2808,6 @@ class checklist_class {
                     $size = $table->size[$key];
                     $img = '&nbsp;';
                     $cellclass = 'level'.$table->level[$key];
-                    //list($teachermark, $studentmark, $heading, $userid, $checkid) = $item;
 					list($oscemark, $studentmark, $heading, $userid, $checkid, $oscetimestamp) = $item;//TDMU
                     if ($heading) {
                         $output .= '<td style=" text-align: center; width: '.$size.';" class="cell c'.$key.' reportheading">&nbsp;</td>';
@@ -2878,11 +2830,6 @@ class checklist_class {
                             }
 
                             if ($editchecks) {
-                                //if ($teachermarklocked && $oscemark == CHECKLIST_OSCE_FULL || $userid == $USER->id) {
-                                //    $disabled = 'disabled="disabled" ';
-                                //} else {
-                                //    $disabled = '';
-                                //}
                                 $disabled = ($teachermarklocked && ($teachermark == CHECKLIST_OSCE_FULL || $teachermark == CHECKLIST_OSCE_HALF)) ? 'disabled="disabled" ' : '';
 
                                 $selu = ($oscemark == CHECKLIST_OSCE_UNDECIDED) ? 'selected="selected" ' : '';
@@ -2912,7 +2859,7 @@ class checklist_class {
                         if ($key == $lastkey) {
                             $cellclass .= ' lastcol';
                         }
-//output students marks in table row are there:
+                        //output students marks in table row are there:
                         $output .= '<td style=" text-align: center; width: '.$size.';" class="'.$cellclass.'">'.$img.'</td>';
                     }
                 }
@@ -3191,11 +3138,8 @@ class checklist_class {
     
 	//TDMU-02 OSCE
 	function process_oscereport_actions() {
-        //global $SESSION;
         $settings = $this->get_report_settings();
         
-        //$this->showoptional = true;
-        //$this->sortby = optional_param('sortby', 'firstasc', PARAM_TEXT);
         if ($sortby = optional_param('sortby', false, PARAM_TEXT)) {
             $settings->sortby = $sortby;
             $this->set_report_settings($settings);
@@ -3212,17 +3156,6 @@ class checklist_class {
             error('Invalid sesskey');
         }
         
-        //if ($action == 'hideoptional') {
-        //    $this->showoptional = false;
-        //} else if ($action == 'updatechecks' && $this->caneditother()) {
-        //    if (!$viewnext) {
-        //        $this->updateoscearks();
-        //    }
-        //} else if ($action == 'updateallchecks' && $this->caneditother()) {
-        //    $this->updatealloscemarks();
-        //} else if ($action == 'toggledates') {
-        //    $this->toggleshowcompletiondates();
-        //}
         switch ($action) {
         case 'showprogressbars':
             $settings->showprogressbars = true;
@@ -3944,10 +3877,6 @@ class checklist_class {
 
         $updategrades = false;
         if ($this->checklist->teacheredit != CHECKLIST_MARKING_STUDENT) {
-           // if ($this->userid != $USER->id) {
-            //    if (!$student = get_record('user', 'id', $this->userid)) {
-            //        error('No such user!');
-            //    }
             if (!$student = $DB->get_record('user', array('id' => $this->userid))) {
                 error('No such user!');
             }            
@@ -3960,7 +3889,6 @@ class checklist_class {
                     //list($itemid, $newval) = explode(':',$newcheck, 2);
 
                     if (isset($this->items[$itemid])) {
-                        // $item =& $this->items[$itemid];
                         $item = $this->items[$itemid];
 
                         if ($teachermarklocked && ($item->oscemark == CHECKLIST_OSCE_FULL || $item->oscemark == CHECKLIST_OSCE_HALF)) {
@@ -3992,7 +3920,7 @@ class checklist_class {
                         }
                     }
                 }
-				//TDMU-4 disabled
+				//TDMU-02 disabled
 				/*
                 if ($updategrades) {
                     checklist_update_grades($this->checklist, $this->userid);
@@ -4010,16 +3938,12 @@ class checklist_class {
             return;
         }
 
-        //$itemids = implode(',',array_keys($this->items));
-        //$commentsunsorted = get_records_select('checklist_comment',"userid = {$this->userid} AND itemid IN ({$itemids})");
         list($isql, $iparams) = $DB->get_in_or_equal(array_keys($this->items));
         $commentsunsorted = $DB->get_records_select('checklist_comment',"userid = ? AND itemid $isql", array_merge(array($this->userid), $iparams) );
         $comments = array();
-        //if ($commentsunsorted) {
-            foreach ($commentsunsorted as $comment) {
-                $comments[$comment->itemid] = $comment;
-            }
-        //}
+        foreach ($commentsunsorted as $comment) {
+            $comments[$comment->itemid] = $comment;
+        }
         foreach ($newcomments as $itemid => $newcomment) {
             $newcomment = trim($newcomment);
             if ($newcomment == '') {
@@ -4157,11 +4081,6 @@ class checklist_class {
             return;
         }
 
-        //$checkdata = optional_param('items', array(), PARAM_INT);
-        //if (!is_array($checkdata)) {
-            // Something has gone wrong, so update nothing
-        //    return;
-        //}
         if ($CFG->version < 2011120100) {
             $userids = optional_param('userids', array(), PARAM_INT);
         } else {

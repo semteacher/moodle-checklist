@@ -160,6 +160,18 @@ ol.checklist li .itemteachername {
     background-color: #00bf00;
 }
 
+.checklistreport .cell.level0-halfchecked {
+    background-color: #ffff80;
+}
+
+.checklistreport .cell.level1-halfchecked {
+    background-color: #ffff40;
+}
+
+.checklistreport .cell.level2-halfchecked {
+    background-color: #ffff00;
+}
+
 .checklistreport .cell.level0-unchecked {
     background-color: #ff0000;
 }

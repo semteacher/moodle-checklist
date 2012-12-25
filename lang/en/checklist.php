@@ -146,6 +146,22 @@ $string['moveitemup'] = 'Move item up';
 
 $string['noitems'] = 'No items in the checklist';
 
+//TDMU-02 OSKI marks text
+$string['osce'] = 'OSCE Marks';
+$string['oscesettings'] = 'OSCE/OSPE Settings';
+$string['osceallowed'] = 'Enable OSCE/OSPE Marks';
+$string['oscemarkundecided'] = 'Teacher has not yet marked this OSCE/OSPE item';
+$string['oscemarkfullalt'] = 'Teacher states that you have fully completed this OSCE/OSPE item';
+$string['oscemarkyhalfalt'] = 'Teacher states that you have half completed this OSCE/OSPE item';
+$string['oscemarkfailalt'] = 'Teacher states that you have NOT completed this OSCE/OSPE item!';
+$string['oscemarkfull'] = '1,0';
+$string['oscemarkhalf'] = '0,5';
+$string['oscemarkfail'] = '0,0';
+$string['oscemarksedit'] = 'Edit marks';
+$string['oscemarksfor'] = 'OSCE/OSPE Marks for';
+$string['oscetoggledates'] = 'Toggle OSCE/OSPE marks authors/dates';
+//TDMU-02 OSKI marks text
+
 $string['optionalitem'] = 'This item is optional';
 $string['optionalhide'] = 'Hide optional items';
 $string['optionalshow'] = 'Show optional items';
@@ -160,7 +176,7 @@ $string['putchecksforvisible'] = 'For all shown students:';//@TDMU-01 title for 
 
 $string['removeauto'] = 'Remove course module items';
 
-$string['report'] = 'View Progress';
+$string['report'] = 'Checklist Progress';
 $string['reporttablesummary'] = 'Table showing the items on the checklist that each student has completed';
 
 $string['requireditem'] = 'This item is required - it must be completed';
@@ -189,6 +205,7 @@ $string['teacheroverwritecheck'] = 'Teacher only';
 $string['teacheralongsidecheck'] = 'Student and teacher';
 
 $string['teacherwhocheckthis'] = 'Checked by ';//@TDMU-01
+$string['teacherwhomarkosce'] = 'Marked by';//@TDMU-02
 
 $string['toggledates'] = 'Toggle names & dates';
 

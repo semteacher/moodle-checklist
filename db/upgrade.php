@@ -271,7 +271,46 @@ function xmldb_checklist_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2012092002, 'checklist');
     }
 
+    if ($oldversion < 2012121402) {
+    
+        $table = new xmldb_table('checklist');
+        $field = new xmldb_field('osceallowed', XMLDB_TYPE_INTEGER, '4', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'lockteachermarks');
+        
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Define field teacherid to be added to checklist_check
+        $table = new xmldb_table('checklist_check');
+        $field = new xmldb_field('oscemark', XMLDB_TYPE_INTEGER, '4', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'teacherid');
 
+        // Conditionally launch add field teacherid
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Define field teacherid to be added to checklist_check
+        $table = new xmldb_table('checklist_check');
+        $field = new xmldb_field('oscetimestamp', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'oscemark');
+
+        // Conditionally launch add field teacherid
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Define field teacherid to be added to checklist_check
+        $table = new xmldb_table('checklist_check');
+        $field = new xmldb_field('osceteacherid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'oscetimestamp');
+
+        // Conditionally launch add field teacherid
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // checklist savepoint reached
+        upgrade_mod_savepoint(true, 2012121402, 'checklist');
+    }
+    
     return $result;
 
 }

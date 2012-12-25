@@ -134,6 +134,22 @@ $string['moveitemup'] = 'Переместить пункт вверх';
 
 $string['noitems'] = 'В контрольном списке нет пунктов';
 
+//TDMU-02 OSKI marks text
+$string['osce'] = 'Оценки за ОСКЭ/ОСПЭ';
+$string['oscesettings'] = 'Настройки ОСКЭ/ОСПЭ';
+$string['osceallowed'] = 'Включить оценки за ОСКЭ/ОСПЭ';
+$string['oscemarkundecided'] = 'Вы еще не сдавали этот навык ОСКЭ/ОСПЭ';
+$string['oscemarkfullalt'] = 'Вы выполнили этот навык ОСКЭ/ОСПЭ отлично';
+$string['oscemarkyhalfalt'] = 'Вы выполнили этот навык ОСКЭ/ОСПЭ удовлетворительно';
+$string['oscemarkfailalt'] = 'Вы не выполнили этот навык ОСКЭ/ОСПЭ!';
+$string['oscemarkfull'] = '1,0';
+$string['oscemarkhalf'] = '0,5';
+$string['oscemarkfail'] = '0,0';
+$string['oscemarksedit'] = 'Редактировать оценки';
+$string['oscemarksfor'] = 'Оценки за ОСКЭ/ОСПЭ для';
+$string['oscetoggledates'] = 'Показать/скрыть авторов и даті оценок за ОСКЭ/ОСПЭ';
+//TDMU-02 OSKI marks text
+
 $string['optionalitem'] = 'Этот пункт необязательный';
 $string['optionalhide'] = 'Спрятать необязательные пункты';
 $string['optionalshow'] = 'Показать необязательные пункты';
@@ -142,13 +158,13 @@ $string['percentcomplete'] = 'Обязательные пункты';
 $string['percentcompleteall'] = 'Все пункты';
 $string['pluginname'] = 'Контрольный список';
 $string['preview'] = 'Предварительный просмотр';
-$string['progress'] = 'Достижения';
+$string['progress'] = 'Отметки';
 
 $string['putchecksforvisible'] = 'Всем показанным студентам:';//@TDMU-01 title for column select control
 
 $string['removeauto'] = 'Удалить пункты, которые соответствуют модулю курса';
 
-$string['report'] = 'Просмотреть достижения';
+$string['report'] = 'Просмотреть отметки';
 $string['reporttablesummary'] = 'Таблица показывает пункты контрольного списка, выполненные каждым студентом';
 
 $string['requireditem'] = 'Этот пункт является обязательным - он должен быть выполнен';
@@ -178,6 +194,7 @@ $string['teacheralongsidecheck'] = 'Студенты и преподавател
 
 //TDMU: title for teacher name field
 $string['teacherwhocheckthis'] = 'Отметил';
+$string['teacherwhomarkosce'] = 'Поставил';
 
 $string['toggledates'] = 'Показать/скрыть автора и дату отметки';
 
@@ -195,8 +212,8 @@ $string['viewall'] = 'Просмотреть всех студентов';
 $string['viewallcancel'] = 'Отменить';
 $string['viewallsave'] = 'Сохранить';
 
-$string['viewsinglereport'] = 'Просмотреть достижения этого пользователя';
-$string['viewsingleupdate'] = 'Обновить достижения этого пользователя';
+$string['viewsinglereport'] = 'Просмотреть отметки этого пользователя';
+$string['viewsingleupdate'] = 'Обновить отметки этого пользователя';
 
 
 $string['yesnooverride'] = 'Да, без замещения';

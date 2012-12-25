@@ -23,7 +23,8 @@
         <FIELD NAME="autoupdate" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Automatically update items that are linked to course modules (tick them off when items are complete)" PREVIOUS="autopopulate" NEXT="completionpercent"/>
         <FIELD NAME="completionpercent" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Percentage of items that need to be checked off before the checklist is regarded as complete" PREVIOUS="autoupdate" NEXT="emailoncomplete"/>
         <FIELD NAME="emailoncomplete" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not to email teachers when a checklist is completed" PREVIOUS="completionpercent" NEXT="lockteachermarks"/>
-        <FIELD NAME="lockteachermarks" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="If true, then teachers will be unable to change marks after saving a 'yes'" PREVIOUS="emailoncomplete"/>
+        <FIELD NAME="lockteachermarks" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="If true, then teachers will be unable to change marks after saving a 'yes'" PREVIOUS="emailoncomplete" NEXT="osceallowed"/>
+        <FIELD NAME="osceallowed" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="If false, then teachers will be unable to edit an OSCE marks" PREVIOUS="lockteachermarks"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -65,7 +66,10 @@
         <FIELD NAME="usertimestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="userid" NEXT="teachermark"/>
         <FIELD NAME="teachermark" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="usertimestamp" NEXT="teachertimestamp"/>
         <FIELD NAME="teachertimestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="teachermark" NEXT="teacherid"/>
-        <FIELD NAME="teacherid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The userid of the teacher who updated this checkmark" PREVIOUS="teachertimestamp"/>
+        <FIELD NAME="teacherid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The userid of the teacher who updated this checkmark" PREVIOUS="teachertimestamp" NEXT="oscemark"/>
+        <FIELD NAME="oscemark" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="TDMU:The OSCE mark" PREVIOUS="teacherid" NEXT="oscetimestamp"/>
+        <FIELD NAME="oscetimestamp" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="TDMU:Time when the OSCE mark was edited" PREVIOUS="oscemark" NEXT="osceteacherid"/>
+        <FIELD NAME="osceteacherid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="TDMU:The userid of the teacher who has done OSCE mark!" PREVIOUS="oscetimestamp"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

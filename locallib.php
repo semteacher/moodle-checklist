@@ -818,7 +818,7 @@ class checklist_class {
         $thispage = new moodle_url('/mod/checklist/view.php', array('id' => $this->cm->id) );
 
         $teachermarklocked = false;
-        $showcompletiondates = true;//@TDMU-01
+        //$showcompletiondates = true;//@TDMU-01
         if ($viewother) {
             if ($comments) {
                 $editcomments = optional_param('editcomments', false, PARAM_BOOL);
@@ -852,33 +852,34 @@ class checklist_class {
             echo '<input type="hidden" name="action" value="toggledates" />';
             echo ' <input type="submit" name="toggledates" value="'.get_string('toggledates','checklist').'" />';
             echo '</form>';
+        }
+        
+        $teachermarklocked = $this->checklist->lockteachermarks && !has_capability('mod/checklist:updatelocked', $this->context);
 
-            $teachermarklocked = $this->checklist->lockteachermarks && !has_capability('mod/checklist:updatelocked', $this->context);
+        $reportsettings = $this->get_report_settings();
+        $showcompletiondates = $reportsettings->showcompletiondates;
 
-            $reportsettings = $this->get_report_settings();
-            $showcompletiondates = $reportsettings->showcompletiondates;
+        $strteacherdate = get_string('teacherdate', 'mod_checklist');
+        $struserdate = get_string('userdate', 'mod_checklist');
+        $strteachername = get_string('teacherid', 'mod_checklist');
 
-            $strteacherdate = get_string('teacherdate', 'mod_checklist');
-            $struserdate = get_string('userdate', 'mod_checklist');
-            $strteachername = get_string('teacherid', 'mod_checklist');
-
-            if ($showcompletiondates) {
-                $teacherids = array();
-                foreach ($this->items as $item) {
-                    if ($item->teacherid) {
-                        $teacherids[$item->teacherid] = $item->teacherid;
-                    }
+        if ($showcompletiondates) {
+            $teacherids = array();
+            foreach ($this->items as $item) {
+                if ($item->teacherid) {
+                    $teacherids[$item->teacherid] = $item->teacherid;
                 }
-                $teachers = $DB->get_records_list('user', 'id', $teacherids, '', 'id, firstname, lastname');
-                foreach ($this->items as $item) {
-                    if (isset($teachers[$item->teacherid])) {
-                        $item->teachername = fullname($teachers[$item->teacherid]);
-                    } else {
-                        $item->teachername = false;
-                    }
+            }
+            $teachers = $DB->get_records_list('user', 'id', $teacherids, '', 'id, firstname, lastname');
+            foreach ($this->items as $item) {
+                if (isset($teachers[$item->teacherid])) {
+                    $item->teachername = fullname($teachers[$item->teacherid]);
+                } else {
+                    $item->teachername = false;
                 }
             }
         }
+        
 
         $intro = file_rewrite_pluginfile_urls($this->checklist->intro, 'pluginfile.php', $this->context->id, 'mod_checklist', 'intro', null);
         $opts = array('trusted' => $CFG->enabletrusttext);

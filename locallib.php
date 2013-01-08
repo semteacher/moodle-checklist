@@ -1334,7 +1334,7 @@ class checklist_class {
             echo '<input type="hidden" name="action" value="toggledates" />';
             echo ' <input type="submit" name="toggledates" value="'.get_string('oscetoggledates','checklist').'" />';
             echo '</form>';
-
+        }
             $teachermarklocked = $this->checklist->lockteachermarks && !has_capability('mod/checklist:updatelocked', $this->context);
             //TDMU-02
             $reportsettings = $this->get_report_settings();
@@ -1360,7 +1360,7 @@ class checklist_class {
                     }
                 }
             }
-        }
+        
 
         $intro = file_rewrite_pluginfile_urls($this->checklist->intro, 'pluginfile.php', $this->context->id, 'mod_checklist', 'intro', null);
         $opts = array('trusted' => $CFG->enabletrusttext);

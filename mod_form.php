@@ -57,7 +57,7 @@ class mod_checklist_mod_form extends moodleform_mod {
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
-        $mform->setDefault('name', get_string('checklistdefaultname', 'checklist'));//@TDMU-01 default name for the cheklist
+        $mform->setDefault('name', get_string('checklistdefaultname', 'checklist').' - '.$COURSE->shortname);//@TDMU-01 default name for the cheklist
 
         $this->add_intro_editor(false, get_string('checklistintro', 'checklist'));//@TDMU-01 intro is not required
 

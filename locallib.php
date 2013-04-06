@@ -88,7 +88,7 @@ class checklist_class {
         }
 
         if (isset($CFG->enablegroupmembersonly) && $CFG->enablegroupmembersonly && $checklist->autopopulate && $userid) {
-            $this->groupings = $this->get_user_groupings($userid, $this->course->id);
+            $this->groupings = self::get_user_groupings($userid, $this->course->id);
         } else {
             $this->groupings = false;
         }
@@ -201,7 +201,7 @@ class checklist_class {
                 continue;
             }
 
-            if ($importsection > 0 && $importsection != $section) {
+            if ($importsection >= 0 && $importsection != $section) {
                 $section++; // Only importing the section with the checklist in it
                 continue;
             }
@@ -719,7 +719,7 @@ class checklist_class {
             if (($item->itemoptional == CHECKLIST_OPTIONAL_HEADING)||($item->hidden)) {
                 continue;
             }
-            if ($checkgroupings && $item->grouping) {
+            if ($checkgroupings && !empty($item->grouping)) {
                 if (!in_array($item->grouping, $this->groupings)) {
                     continue; // Current user is not a member of this item's grouping
                 }
@@ -984,7 +984,7 @@ class checklist_class {
                     continue;
                 }
 
-                if ($checkgroupings && $item->grouping) {
+                if ($checkgroupings && !empty($item->grouping)) {
                     if (!in_array($item->grouping, $this->groupings)) {
                         continue; // Current user is not a member of this item's grouping, so skip
                     }
@@ -4437,7 +4437,7 @@ class checklist_class {
         }
         $groupings_sel = '';
         if (isset($CFG->enablegroupmembersonly) && $CFG->enablegroupmembersonly && $checklist->autopopulate) {
-            $groupings = checklist_class::get_user_groupings($userid, $checklist->course);
+            $groupings = self::get_user_groupings($userid, $checklist->course);
             $groupings[] = 0;
             $groupings_sel = ' AND grouping IN ('.implode(',',$groupings).') ';
         }
@@ -4460,7 +4460,7 @@ class checklist_class {
         return array($ticked, $total);
     }
 
-    function get_user_groupings($userid, $courseid) {
+    public static function get_user_groupings($userid, $courseid) {
         global $DB;
         $sql = "SELECT gg.groupingid
                   FROM ({groups} g JOIN {groups_members} gm ON g.id = gm.groupid)

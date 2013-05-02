@@ -2859,6 +2859,11 @@ class checklist_class {
                             $newcheck->userid = $this->userid;
                             $newcheck->id = $DB->insert_record('checklist_check', $newcheck);
                         }
+                        //TDMU-01-1 detail email 
+                        //TODO - add mod_form param and additional condition
+                        if ($updategrades){
+                            checklist_details_email($this->checklist, $item, $this->userid);
+                        }
                     }
                 }
             }

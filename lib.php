@@ -368,7 +368,6 @@ function checklist_update_grades($checklist, $userid=0) {
             $ci->update_state($cm, COMPLETION_UNKNOWN, $grade->userid);
         }
     }
-
     checklist_grade_item_update($checklist, $grades);
 }
 
@@ -403,6 +402,59 @@ function checklist_grade_item_update($checklist, $grades=null) {
     }
 
     return grade_update('mod/checklist', $checklist->courseid, 'mod', 'checklist', $checklist->id, 0, $grades, $params);
+}
+/**
+ * TDMU-01-1 email detail info
+*/
+function checklist_details_email($checklist, $item, $userid=0) {
+    global $CFG, $DB;
+
+    $items = $DB->get_records('checklist_item',
+                              array('checklist' => $checklist->id,
+                                    'userid' => 0,
+                                    'itemoptional' => CHECKLIST_OPTIONAL_NO,
+                                    'hidden' => CHECKLIST_HIDDEN_NO ),
+                              '', 'id, grouping');
+    if (!$items) {
+        return;
+    }
+    if (!$course = $DB->get_record('course', array('id' => $checklist->course) )) {
+        return;
+    }
+    if (!$cm = get_coursemodule_from_instance('checklist', $checklist->id, $course->id)) {
+        return;
+    }
+
+                    //prepare email content
+                    $details = new stdClass();
+                    $details->user = fullname($grade);
+                    $details->checklist = s($checklist->name);
+                    $details->coursename = $course->fullname;
+
+                    if ($checklist->emailoncomplete == CHECKLIST_EMAIL_TEACHER || $checklist->emailoncomplete == CHECKLIST_EMAIL_BOTH) {
+                        //email will be sended to the all teachers who have capability
+                        $subj = get_string('emailoncompletesubject', 'checklist', $details);
+                        $content = get_string('emailoncompletebody', 'checklist', $details);
+                        $content .= "Changed item: ".s($item->displaytext);
+                        $content .= new moodle_url('/mod/checklst/view.php', array('id' => $cm->id));
+
+                        if ($recipients = get_users_by_capability($context, 'mod/checklist:emailoncomplete', 'u.*', '', '', '', '', '', false)) {
+                            foreach ($recipients as $recipient) {                                
+                                email_to_user($recipient, $grade, $subj, $content, '', '', '', false);
+                            }
+                        }
+                    }
+                    if ($checklist->emailoncomplete == CHECKLIST_EMAIL_STUDENT || $checklist->emailoncomplete == CHECKLIST_EMAIL_BOTH) {
+                        //email will be sended to the student who complete this checklist
+                        $subj = get_string('emailoncompletesubjectown', 'checklist', $details);
+                        $content = get_string('emailoncompletebodyown', 'checklist', $details);
+                        $content .= "Changed item: ".s($item->displaytext);
+                        $content .= new moodle_url('/mod/checklst/view.php', array('id' => $cm->id));
+
+                        $recipient_stud = $DB->get_record('user', array('id' => $grade->userid) );
+                        email_to_user($recipient_stud, $grade, $subj, $content, '', '', '', false);                        
+                    }
+        
 }
 
 

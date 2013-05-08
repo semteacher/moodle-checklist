@@ -770,7 +770,6 @@ class checklist_class {
         $thispage = new moodle_url('/mod/checklist/view.php', array('id' => $this->cm->id) );
 
         $teachermarklocked = false;
-        $showcompletiondates = true;//@TDMU-01
         if ($viewother) {
             if ($comments) {
                 $editcomments = optional_param('editcomments', false, PARAM_BOOL);
@@ -1034,9 +1033,9 @@ class checklist_class {
                     }
                 }
                 
-                //TDMU-01 begin block - temporarily disabled due to further modification
-                //$reportsettings = $this->get_report_settings();
-                //$showcompletiondates = $reportsettings->showcompletiondates;
+                //TDMU-01 begin block
+                $reportsettings = $this->get_report_settings();
+                $showcompletiondates = $reportsettings->showcompletiondates;
 
                 $strteacherdate = get_string('teacherdate', 'mod_checklist');
                 $struserdate = get_string('userdate', 'mod_checklist');

@@ -1034,13 +1034,14 @@ class checklist_class {
                     }
                 }
                 
-                //TDMU-01 temporarily disabled due to further modification
+                //TDMU-01 begin block - temporarily disabled due to further modification
                 //$reportsettings = $this->get_report_settings();
                 //$showcompletiondates = $reportsettings->showcompletiondates;
 
                 $strteacherdate = get_string('teacherdate', 'mod_checklist');
                 $struserdate = get_string('userdate', 'mod_checklist');
                 $strteachername = get_string('teacherid', 'mod_checklist');
+                //TDMU-01 - end block
                 
                 if ($showcompletiondates) {
                     //TDMU-01 - TODO - convert into function?
@@ -1058,6 +1059,7 @@ class checklist_class {
                             $item->teachername = false;
                         }
                     }
+                    //TDMU-01 - end block
                     
                     if ($item->itemoptional != CHECKLIST_OPTIONAL_HEADING) {
                         if ($showteachermark && $item->teachermark != CHECKLIST_TEACHERMARK_UNDECIDED && $item->teachertimestamp) {

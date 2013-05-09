@@ -148,6 +148,15 @@ class checklist_class {
                     $this->items[$id]->oscemark = $check->oscemark;
                     $this->items[$id]->osceteacherid = $check->osceteacherid;
                     $this->items[$id]->oscetimestamp = $check->oscetimestamp;
+
+                    //TDMU-01 - put teacher name if exist
+                    if (isset($this->items[$id]->teacherid)) {
+                        $teachers = $DB->get_record('user', array('id'=>$this->items[$id]->teacherid), 'id, firstname, lastname');
+                        $this->items[$id]->teachername = fullname($teachers);
+                    } else {
+                        $this->items[$id]->teachername = false;
+                    }//TDMU-01 - end block
+                                   
                 } else if ($this->useritems && isset($this->useritems[$id])) {
                     $this->useritems[$id]->checked = $check->usertimestamp > 0;
                     $this->useritems[$id]->usertimestamp = $check->usertimestamp;
@@ -863,7 +872,7 @@ class checklist_class {
             $strteachername = get_string('teacherid', 'mod_checklist');
 
             if ($showcompletiondates) {
-                //TDMU-01 - TODO - convert into function?
+
                 $teacherids = array();
                 foreach ($this->items as $item) {
                     if ($item->teacherid) {
@@ -1092,23 +1101,6 @@ class checklist_class {
                 //TDMU-01 - end block
                 
                 if ($showcompletiondates) {
-                    //TDMU-01 - TODO - convert into function?
-                    $teacherids = array();
-                    foreach ($this->items as $item) {
-                        if ($item->teacherid) {
-                            $teacherids[$item->teacherid] = $item->teacherid;
-                        }
-                    }
-                    $teachers = $DB->get_records_list('user', 'id', $teacherids, '', 'id, firstname, lastname');
-                    foreach ($this->items as $item) {
-                        if (isset($teachers[$item->teacherid])) {
-                            $item->teachername = fullname($teachers[$item->teacherid]);
-                        } else {
-                            $item->teachername = false;
-                        }
-                    }
-                    //TDMU-01 - end block
-                    
                     if ($item->itemoptional != CHECKLIST_OPTIONAL_HEADING) {
                         if ($showteachermark && $item->teachermark != CHECKLIST_TEACHERMARK_UNDECIDED && $item->teachertimestamp) {
                             if ($item->teachername) {

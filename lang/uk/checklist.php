@@ -197,7 +197,7 @@ $string['teacheralongsidecheck'] = 'Студенти і викладачі';
 
 //TDMU: title for teacher name field
 $string['teacherwhocheckthis'] = 'Відмітив: ';
-$string['teacherwhomarkosce'] = 'Поставив';
+$string['teacherwhomarkosce'] = 'Поставив: ';
 
 $string['toggledates'] = 'Показати/приховати автора і дату відмітки';
 

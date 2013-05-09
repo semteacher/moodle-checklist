@@ -196,8 +196,8 @@ $string['teacheroverwritecheck'] = 'Преподаватели';
 $string['teacheralongsidecheck'] = 'Студенты и преподаватели';
 
 //TDMU: title for teacher name field
-$string['teacherwhocheckthis'] = 'Отметил';
-$string['teacherwhomarkosce'] = 'Поставил';
+$string['teacherwhocheckthis'] = 'Отметил: ';
+$string['teacherwhomarkosce'] = 'Поставил: ';
 
 $string['toggledates'] = 'Показать/скрыть автора и дату отметки';
 

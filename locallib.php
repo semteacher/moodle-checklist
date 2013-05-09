@@ -144,7 +144,7 @@ class checklist_class {
                     $this->items[$id]->usertimestamp = $check->usertimestamp;
                     $this->items[$id]->teachertimestamp = $check->teachertimestamp;
                     $this->items[$id]->teacherid = $check->teacherid;
-                    //TDMU-02 get OSKI mark
+                    //TDMU-02 get OSKI/OSPI mark
                     $this->items[$id]->oscemark = $check->oscemark;
                     $this->items[$id]->osceteacherid = $check->osceteacherid;
                     $this->items[$id]->oscetimestamp = $check->oscetimestamp;
@@ -156,7 +156,15 @@ class checklist_class {
                     } else {
                         $this->items[$id]->teachername = false;
                     }//TDMU-01 - end block
-                                   
+
+                    //TDMU-02 - put osceteacher name if exist
+                    if (isset($this->items[$id]->osceteacherid)) {
+                        $osceteachers = $DB->get_record('user', array('id'=>$this->items[$id]->osceteacherid), 'id, firstname, lastname');
+                        $this->items[$id]->osceteachername = fullname($osceteachers);
+                    } else {
+                        $this->items[$id]->osceteachername = false;
+                    }//TDMU-02 - end block                    
+                     
                 } else if ($this->useritems && isset($this->useritems[$id])) {
                     $this->useritems[$id]->checked = $check->usertimestamp > 0;
                     $this->useritems[$id]->usertimestamp = $check->usertimestamp;
@@ -541,6 +549,49 @@ class checklist_class {
         $this->view_footer();
     }
 
+    //TDMU-02 view osce tab
+        function osceview() {
+        global $OUTPUT;
+
+        if ((!$this->items) && $this->canedit()) {
+            redirect(new moodle_url('/mod/checklist/edit.php', array('id' => $this->cm->id)) );
+        }
+
+        if ($this->canupdateown()) {
+            $currenttab = 'osce';
+        } else if ($this->canpreview()) {
+            $currenttab = 'preview';
+        } else {
+            if ($this->canviewreports()) { // No editing, but can view reports
+                redirect(new moodle_url('/mod/checklist/oscereport.php', array('id' => $this->cm->id)));
+            } else {
+                $this->view_header();
+
+                echo $OUTPUT->heading(format_string($this->checklist->name));
+                echo $OUTPUT->confirm('<p>' . get_string('guestsno', 'checklist') . "</p>\n\n<p>" .
+                                      get_string('liketologin') . "</p>\n", get_login_url(), get_referer(false));
+                echo $OUTPUT->footer();
+                die;
+            }
+            $currenttab = '';
+        }
+
+        $this->view_header();
+
+        echo $OUTPUT->heading(format_string($this->checklist->name));
+
+        $this->view_tabs($currenttab);
+
+        add_to_log($this->course->id, 'checklist', 'view', "osceview.php?id={$this->cm->id}", $this->checklist->name, $this->cm->id);
+
+        if ($this->canupdateown()) {
+            $this->process_view_actions();
+        }
+
+        $this->view_osceitems();
+
+        $this->view_footer();
+    }
 
     function edit() {
         global $OUTPUT;
@@ -636,7 +687,7 @@ class checklist_class {
         $this->process_oscereport_actions();
 
         if ($this->userid) {//show single student osce marks
-            $this->view_osceitems();
+            $this->view_osceitems(true);//2013-05
         } else {//show list of all osce marks
             add_to_log($this->course->id, "checklist", "oscereport", "oscereport.php?id={$this->cm->id}", $this->checklist->name, $this->cm->id);
            $this->view_oscereport();
@@ -667,13 +718,17 @@ class checklist_class {
 
         if ($this->canupdateown()) {
             $row[] = new tabobject('view', new moodle_url('/mod/checklist/view.php', array('id' => $this->cm->id)), get_string('view', 'checklist'));
+            //TDMU-02 display an OSCE view tab		
+            if ($this->checklist->osceallowed && !$this->canviewreports()) {
+                $row[] = new tabobject('osceview', new moodle_url('/mod/checklist/osceview.php', array('id' => $this->cm->id)), get_string('osce', 'checklist'));
+            }                    
         } else if ($this->canpreview()) {
             $row[] = new tabobject('preview', new moodle_url('/mod/checklist/view.php', array('id' => $this->cm->id)), get_string('preview', 'checklist'));
         }
         if ($this->canviewreports()) {
             $row[] = new tabobject('report', new moodle_url('/mod/checklist/report.php', array('id' => $this->cm->id)), get_string('report', 'checklist'));
         }
-		//TDMU-02 display an OSCE tab		
+		//TDMU-02 display an OSCE report tab		
 		if ($this->canviewreports() && $this->checklist->osceallowed) {
             $row[] = new tabobject('osce', new moodle_url('/mod/checklist/oscereport.php', array('id' => $this->cm->id)), get_string('osce', 'checklist'));
         }       
@@ -691,11 +746,16 @@ class checklist_class {
             $activated[] = 'report';
         }
         
-		//TDMU-02 OSCE
+		//TDMU-02 OSCE report
         if ($currenttab == 'osce') {
             $activated[] = 'osce';
         }
 
+		//TDMU-02 OSCE view
+        if ($currenttab == 'osceview') {
+            $activated[] = 'osceview';
+        }
+        
         if ($currenttab == 'edit') {
             $activated[] = 'edit';
 
@@ -1288,24 +1348,47 @@ class checklist_class {
     }
 
     //TDMU-02 OSCE
-    function view_osceitems($userreport = false) {
+    function get_osceteachermark($itemid) {
+        global $OUTPUT;
+
+        if (!isset($this->items[$itemid])) {
+            return array('','');
+        }       
+        
+        switch ($this->items[$itemid]->oscemark) {
+        case CHECKLIST_OSCE_FULL:
+            return array($OUTPUT->pix_url('osce_full','checklist'),get_string('oscemarkfull','checklist'));
+
+        case CHECKLIST_OSCE_HALF:
+            return array($OUTPUT->pix_url('osce_half','checklist'),get_string('oscemarkhalf','checklist'));
+            
+        case CHECKLIST_OSCE_FAIL:
+            return array($OUTPUT->pix_url('osce_fail','checklist'),get_string('oscemarkhalf','checklist'));
+        
+        default:
+            return array($OUTPUT->pix_url('empty_box','checklist'),get_string('oscemarkundecided','checklist'));
+        }
+    }
+    
+    //TDMU-02 OSCE
+    function view_osceitems($viewother = false, $userreport = false) {
         global $DB, $OUTPUT, $PAGE, $CFG, $USER;
         
-        $viewother = true;//TDMU-02: for compatible issues
+        /////$viewother = true;//TDMU-02: for compatible issues
         echo $OUTPUT->box_start('generalbox boxwidthwide boxaligncenter');
         
         echo html_writer::tag('div', '&nbsp;', array('id' => 'checklistspinner'));
 
 //        $comments = $this->checklist->teachercomments;
 //        $editcomments = false;
-        $thispage = new moodle_url('/mod/checklist/oscereport.php', array('id' => $this->cm->id) );
+        $thispage = new moodle_url('/mod/checklist/osceview.php', array('id' => $this->cm->id) );//TDMU-2013
 
         $teachermarklocked = false;
         //$showcompletiondates = false;
 		//TDMU: ENABLE lock teacher mark by default
 		//$teachermarklocked = TRUE;
 		//TDMU: ENABLE show completion dates by default
-		$showcompletiondates = TRUE;
+		///////$showcompletiondates = TRUE;
 		
         if ($viewother) {
             // $showbars = optional_param('showbars',false,PARAM_BOOL);
@@ -1352,7 +1435,7 @@ class checklist_class {
             echo '<input type="hidden" name="action" value="toggledates" />';
             echo ' <input type="submit" name="toggledates" value="'.get_string('oscetoggledates','checklist').'" />';
             echo '</form>';
-        }
+        ///}
             $teachermarklocked = $this->checklist->lockteachermarks && !has_capability('mod/checklist:updatelocked', $this->context);
             //TDMU-02
             $reportsettings = $this->get_report_settings();
@@ -1361,7 +1444,7 @@ class checklist_class {
             $strteacherdate = get_string('teacherdate', 'mod_checklist');
             $struserdate = get_string('userdate', 'mod_checklist');
             $strteachername = get_string('teacherid', 'mod_checklist');
-//        }
+
             if ($showcompletiondates) {
                 $osceteacherids = array();
                 foreach ($this->items as $item) {
@@ -1378,7 +1461,7 @@ class checklist_class {
                     }
                 }
             }
-        
+        }
 
         $intro = file_rewrite_pluginfile_urls($this->checklist->intro, 'pluginfile.php', $this->context->id, 'mod_checklist', 'intro', null);
         $opts = array('trusted' => $CFG->enabletrusttext);
@@ -1539,7 +1622,7 @@ class checklist_class {
                             echo '<option value="'.CHECKLIST_OSCE_FAIL.'" '.$seln.'>'.get_string('oscemarkfail','checklist').'</option>';
                             echo '</select>';
                         } else {
-                            list($imgsrc, $titletext) = $this->get_teachermark($item->id);
+                            list($imgsrc, $titletext) = $this->get_osceteachermark($item->id);
                             echo '<img src="'.$imgsrc.'" alt="'.$titletext.'" title="'.$titletext.'" />';
                         }
                     }
@@ -1571,6 +1654,15 @@ class checklist_class {
                     }
                 }
 
+                //TDMU-02 begin block
+                $reportsettings = $this->get_report_settings();
+                $showcompletiondates = $reportsettings->showcompletiondates;
+
+                $strteacherdate = get_string('teacherdate', 'mod_checklist');
+                $struserdate = get_string('userdate', 'mod_checklist');
+                $strteachername = get_string('teacherid', 'mod_checklist');
+                //TDMU-02 - end block
+                
                 if ($showcompletiondates) {
                     if ($item->itemoptional != CHECKLIST_OPTIONAL_HEADING) {
                         if ($showteachermark && $item->oscemark != CHECKLIST_OSCE_UNDECIDED && $item->oscetimestamp) {

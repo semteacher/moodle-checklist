@@ -209,7 +209,7 @@ $string['teacheroverwritecheck'] = 'Teacher only';
 $string['teacheralongsidecheck'] = 'Student and teacher';
 
 $string['teacherwhocheckthis'] = 'Checked by ';//@TDMU-01
-$string['teacherwhomarkosce'] = 'Marked by';//@TDMU-02
+$string['teacherwhomarkosce'] = 'Marked by ';//@TDMU-02
 
 $string['toggledates'] = 'Toggle names & dates';
 

@@ -664,17 +664,22 @@ class checklist_class {
 	//TDMU-02 OSCE
 	function oscereport() {
         global $OUTPUT;
-
-        //create new items if no anyone available?
-        if ((!$this->items) && $this->canedit()) {
-            redirect(new moodle_url('/mod/checklist/edit.php?id=', array('id' => $this->cm->id)));
+        
+        if ((!$this->items) && $this->canedit()) { //create new items if no anyone available?
+            redirect(new moodle_url('/mod/checklist/edit.php', array('id' => $this->cm->id)));
         }
         
         if (!$this->canviewreports()) {
-            redirect(new moodle_url('/mod/checklist/view.php?id=', array('id' => $this->cm->id)));
+            redirect(new moodle_url('/mod/checklist/view.php', array('id' => $this->cm->id)));
         }
 
-        if (!$this->caneditother()) {
+        if ($this->userid && $this->only_view_mentee_reports()) {
+            // Check this user is a mentee of the logged in user
+            if (!$this->is_mentor($this->userid)) {
+                $this->userid = false;
+            }
+
+        } else if (!$this->caneditother()) {
             $this->userid = false;
         }
 
@@ -687,10 +692,10 @@ class checklist_class {
         $this->process_oscereport_actions();
 
         if ($this->userid) {//show single student osce marks
-            $this->view_osceitems(true);//2013-05
+            $this->view_osceitems(true);
         } else {//show list of all osce marks
             add_to_log($this->course->id, "checklist", "oscereport", "oscereport.php?id={$this->cm->id}", $this->checklist->name, $this->cm->id);
-           $this->view_oscereport();
+            $this->view_oscereport();
         }
 
         $this->view_footer();
@@ -1374,24 +1379,17 @@ class checklist_class {
     function view_osceitems($viewother = false, $userreport = false) {
         global $DB, $OUTPUT, $PAGE, $CFG, $USER;
         
-        /////$viewother = true;//TDMU-02: for compatible issues
         echo $OUTPUT->box_start('generalbox boxwidthwide boxaligncenter');
         
         echo html_writer::tag('div', '&nbsp;', array('id' => 'checklistspinner'));
-
+        
+        //TDMU-02: comments disabled
 //        $comments = $this->checklist->teachercomments;
 //        $editcomments = false;
-        $thispage = new moodle_url('/mod/checklist/osceview.php', array('id' => $this->cm->id) );//TDMU-2013
+        $thispage = new moodle_url('/mod/checklist/osceview.php', array('id' => $this->cm->id) );
 
-        $teachermarklocked = false;
-        //$showcompletiondates = false;
-		//TDMU: ENABLE lock teacher mark by default
-		//$teachermarklocked = TRUE;
-		//TDMU: ENABLE show completion dates by default
-		///////$showcompletiondates = TRUE;
-		
+        $teachermarklocked = false;		
         if ($viewother) {
-            // $showbars = optional_param('showbars',false,PARAM_BOOL);
             //TDMU-02: comments disabled
             /*
             if ($comments) {
@@ -1418,12 +1416,9 @@ class checklist_class {
 			//TDMU-02: comments disabled
             /*
             if (!$editcomments) {
-                echo '<form style="display: inline;" action="'.$thispage.'" method="get">';
-                echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
-                echo $showbars ? '<input type="hidden" name="showbars" value="on" />' : '';
-                echo '<input type="hidden" name="sortby" value="'.$this->sortby.'" />';
+                echo '<form style="display: inline;" action="'.$thispage->out_omit_querystring().'" method="get">';
+                echo html_writer::input_hidden_params($thispage);
                 echo '<input type="hidden" name="editcomments" value="on" />';
-                echo '<input type="hidden" name="studentid" value="'.$this->userid.'" />';
                 echo ' <input type="submit" name="viewall" value="'.get_string('addcomments','checklist').'" />';
                 echo '</form>';
             }
@@ -1435,9 +1430,9 @@ class checklist_class {
             echo '<input type="hidden" name="action" value="toggledates" />';
             echo ' <input type="submit" name="toggledates" value="'.get_string('oscetoggledates','checklist').'" />';
             echo '</form>';
-        ///}
+
             $teachermarklocked = $this->checklist->lockteachermarks && !has_capability('mod/checklist:updatelocked', $this->context);
-            //TDMU-02
+            
             $reportsettings = $this->get_report_settings();
 	        $showcompletiondates = $reportsettings->showcompletiondates;
             
@@ -1446,6 +1441,7 @@ class checklist_class {
             $strteachername = get_string('teacherid', 'mod_checklist');
 
             if ($showcompletiondates) {
+            
                 $osceteacherids = array();
                 foreach ($this->items as $item) {
                     if ($item->osceteacherid) {
@@ -1502,11 +1498,24 @@ class checklist_class {
                 /*
                 if (!$viewother) {
                     // Load the Javascript required to send changes back to the server (without clicking 'save')
-                    require_js(array('yui_yahoo', 'yui_dom', 'yui_event', 'yui_connection', 'yui_animation'));
-                    require_js($CFG->wwwroot.'/mod/checklist/updatechecks.js');
-                    $updatechecksurl = $CFG->wwwroot.'/mod/checklist/updatechecks.php';
-                    $updateprogress = $showteachermark ? 0 : 1; // Only update progress bars for 'student only' checklists
-                    echo '<script type="text/javascript">mod_checklist.set_server("'.$updatechecksurl.'","'.sesskey().'","'.$this->cm->id.'", '.$updateprogress.');</script>';
+                    if ($CFG->version < 2012120300) { // < Moodle 2.4
+                        $jsmodule = array(
+                            'name' => 'mod_checklist',
+                            'fullpath' => new moodle_url('/mod/checklist/updatechecks.js')
+                        );
+                        $PAGE->requires->yui2_lib('dom');
+                        $PAGE->requires->yui2_lib('event');
+                        $PAGE->requires->yui2_lib('connection');
+                        $PAGE->requires->yui2_lib('animation');
+                    } else {
+                        $jsmodule = array(
+                            'name' => 'mod_checklist',
+                            'fullpath' => new moodle_url('/mod/checklist/updatechecks24.js')
+                        );
+                    }
+                    $updatechecksurl = new moodle_url('/mod/checklist/updatechecks.php');
+                    $updateprogress = $showteachermark ? 0 : 1; // Progress bars should only be updated with 'student only' checklists
+                    $PAGE->requires->js_init_call('M.mod_checklist.init', array($updatechecksurl->out(), sesskey(), $this->cm->id, $updateprogress), true, $jsmodule);
                 }
                 */
                 echo '<form action="'.$thispage->out_omit_querystring().'" method="post">';
@@ -1521,11 +1530,12 @@ class checklist_class {
             //TDMU-02: comments disabled
             /*
             if ($comments) {
-                $itemids = implode(',',array_keys($this->items));
-                $commentsunsorted = get_records_select('checklist_comment',"userid = {$this->userid} AND itemid IN ({$itemids})");
+                list($isql, $iparams) = $DB->get_in_or_equal(array_keys($this->items));
+                $params = array_merge(array($this->userid), $iparams);
+                $commentsunsorted = $DB->get_records_select('checklist_comment',"userid = ? AND itemid $isql", $params);
                 $commentuserids = array();
                 $commentusers = array();
-                if ($commentsunsorted) {
+                if (!empty($commentsunsorted)) {
                     $comments = array();
                     foreach ($commentsunsorted as $comment) {
                         $comments[$comment->itemid] = $comment;
@@ -1534,8 +1544,8 @@ class checklist_class {
                         }
                     }
                     if (!empty($commentuserids)) {
-                        $commentuserids = implode(",",array_unique($commentuserids, SORT_NUMERIC));
-                        $commentusers = get_records_select('user', 'id IN ('.$commentuserids.')');
+                        list($csql, $cparams) = $DB->get_in_or_equal(array_unique($commentuserids, SORT_NUMERIC));
+                        $commentusers = $DB->get_records_select('user', 'id '.$csql, $cparams);
                     }
                 } else {
                     $comments = false;
@@ -1554,7 +1564,7 @@ class checklist_class {
                     continue;
                 }
 
-                if ($checkgroupings && $item->grouping) {
+                if ($checkgroupings && !empty($item->grouping)) {
                     if (!in_array($item->grouping, $this->groupings)) {
                         continue;  // Current user is not a member of this item's grouping, so skip
                     }
@@ -1595,13 +1605,14 @@ class checklist_class {
                 if ($item->itemoptional == CHECKLIST_OPTIONAL_HEADING) {
                     $optional = ' class="itemheading '.$itemcolour.'" ';
                     $spacerimg = $OUTPUT->pix_url('check_spacer','checklist');
-                } elseif ($item->itemoptional == CHECKLIST_OPTIONAL_YES) {
+                } else if ($item->itemoptional == CHECKLIST_OPTIONAL_YES) {
                     $optional = ' class="itemoptional '.$itemcolour.'" ';
                     $checkclass = ' itemoptional';
                 } else {
                     $optional = ' class="'.$itemcolour.'" ';
                     $checkclass = '';
                 }
+                
                 echo '<li>';
                 if ($showteachermark) {
                     if ($item->itemoptional == CHECKLIST_OPTIONAL_HEADING) {
@@ -1634,8 +1645,7 @@ class checklist_class {
                         echo '<input class="checklistitem'.$checkclass.'" type="checkbox" name="items[]" id='.$itemname.$checked.' value="'.$item->id.'" />';
                     }
                 }
-                echo '<label for='.$itemname.$optional.'>&nbsp;'.s($item->displaytext).'</label>';//@TDMU-01 - backspase adedd
-				
+                echo '<label for='.$itemname.$optional.'>&nbsp;'.s($item->displaytext).'</label>';//@TDMU-01 - backspase adedd				
                 if (isset($item->modulelink)) {
                     echo '&nbsp;<a href="'.$item->modulelink.'"><img src="'.$OUTPUT->pix_url('follow_link','checklist').'" alt="'.get_string('linktomodule','checklist').'" /></a>';
                 }
@@ -1670,18 +1680,9 @@ class checklist_class {
                                 echo '<span class="itemteachername" title="'.$strteachername.'">'.get_string('teacherwhomarkosce','checklist').'<a href="'.$CFG->wwwroot.'/user/view.php?id='.$item->osceteacherid.'&amp;course='.$this->course->id.'">'.$item->osceteachername.'</a></span>';//@TDMU-02 - osceteachername work as url
                             }
                             echo '<span class="itemteacherdate" title="'.$strteacherdate.'">'.userdate($item->oscetimestamp, get_string('strftimedatetimeshort')).'</span>';
-                            
-                            //TDMU:show who check (uncheck) this item
-                            //$chekerusertitle = get_string('teacherwhomarkosce','checklist');
-                            //$checkeruser = array();
-                            //$checkeruser = get_records_select('user', "id = {$item->osceteacherid}");
-                            //echo '<span class="itemcheckedbyteacher">&nbsp;'.$chekerusertitle.'&nbsp;';
-                            //echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$item->osceteacherid.'&amp;course='.$this->course->id.'">'.fullname($checkeruser[$item->osceteacherid]).'</a>';						
-                            //echo '&nbsp;</span>';
-                            //echo '<span class="itemteacherdate">'.userdate($item->oscetimestamp, get_string('strftimedatetimeshort')).'</span>';
                         }
                         if ($showcheckbox && $item->checked && $item->usertimestamp) {
-						echo '<span class="itemuserdate">'.userdate($item->usertimestamp, get_string('strftimedatetimeshort')).'</span>';
+                            echo '<span class="itemuserdate" title="'.$struserdate.'">'.userdate($item->usertimestamp, get_string('strftimedatetimeshort')).'</span>';
                         }
                     }
                 }
@@ -1695,10 +1696,16 @@ class checklist_class {
                         $foundcomment = true;
                         echo ' <span class="teachercomment">&nbsp;';
                         if ($comment->commentby) {
-                            echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$comment->commentby.'&amp;course='.$this->course->id.'">'.fullname($commentusers[$comment->commentby]).'</a>: ';
+                            $userurl = new moodle_url('/user/osceview.php', array('id'=>$comment->commentby, 'course'=>$this->course->id) );
+                            echo '<a href="'.$userurl.'">'.fullname($commentusers[$comment->commentby]).'</a>: ';
                         }
                         if ($editcomments) {
-                            echo '<input type="text" name="teachercomment['.$item->id.']" value="'.s($comment->text).'" />';
+                            $outid = '';
+                            if (!$focusitem) {
+                                $focusitem = 'firstcomment';
+                                $outid = ' id="firstcomment" ';
+                            }
+                            echo '<input type="text" name="teachercomment['.$item->id.']" value="'.s($comment->text).'" '.$outid.'/>';
                         } else {
                             echo s($comment->text);
                         }
@@ -1794,14 +1801,13 @@ class checklist_class {
                     
                     echo '<ol class="checklist"><li>';
                     echo '<div style="float: left;">';
-                    //echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
                     echo '<form action="'.$thispage->out_omit_querystring().'" method="post">';
                     echo html_writer::input_hidden_params($thisitemurl);
                     if ($showcheckbox) {
                         echo '<input type="checkbox" disabled="disabled" />';
                     }
                     echo '<input type="text" size="'.CHECKLIST_TEXT_INPUT_WIDTH.'" name="displaytext" value=""  id="additembox" />';
-					//echo '<textarea id="additembox" name="displaytext"  rows="2" cols="50">'new1'</textarea>';
+					//echo '<textarea id="additembox" name="displaytext"  rows="2" cols="'.CHECKLIST_TEXT_INPUT_WIDTH.'" value="" />';//@TDMU-01
                     echo '<input type="submit" name="additem" value="'.get_string('additem','checklist').'" />';
                     echo '<br />';
                     echo '<textarea name="displaytextnote" rows="3" cols="25"></textarea>';
@@ -1824,11 +1830,10 @@ class checklist_class {
 
             if ($updateform) {
                 echo '<input id="checklistsavechecks" type="submit" name="submit" value="'.get_string('savechecks','checklist').'" />';
-                //echo '<input type="hidden" name="sortby" value="'.$this->sortby.'" />';
                 if ($viewother) {
                     echo '&nbsp;<input type="submit" name="save" value="'.get_string('savechecks', 'mod_checklist').'" />';
-                    echo '<input type="submit" name="savenext" value="'.get_string('saveandnext').'" />';
-                    echo '<input type="submit" name="viewnext" value="'.get_string('next').'" />';
+                    echo '&nbsp;<input type="submit" name="savenext" value="'.get_string('saveandnext').'" />';
+                    echo '&nbsp;<input type="submit" name="viewnext" value="'.get_string('next').'" />';
                 }
                 echo '</form>';
             }
@@ -2627,10 +2632,7 @@ class checklist_class {
         $page = optional_param('page', 0, PARAM_INT);
         $perpage = optional_param('perpage', 30, PARAM_INT);
         
-        $thisurl = new moodle_url('/mod/checklist/oscereport.php', array('id'=>$this->cm->id, 'sesskey'=>sesskey()) ); 
-        //$thisurl = $CFG->wwwroot.'/mod/checklist/oscereport.php?id='.$this->cm->id;
-		//$thisurl .= $editchecks ? '&amp;editchecks=on' : '';//TDMU-original bug! - editor was closed when next page visited-this code fix it!
-        
+        $thisurl = new moodle_url('/mod/checklist/oscereport.php', array('id'=>$this->cm->id, 'sesskey'=>sesskey()) );         
         if ($editchecks) { $thisurl->param('editchecks','on'); }
     
         if ($this->checklist->autoupdate && $this->checklist->autopopulate) {
@@ -2689,7 +2691,7 @@ class checklist_class {
 		if ($showtdmuexportbtn){
 		//TODO: temporarily disabled. Need a new procedure!
 		//	$exporturl = $CFG->wwwroot.'/mod/checklist/exporthtml.php?id='.$this->cm->id.'&sortby='.$this->sortby.'&showoptional='.$this->showoptional.'&page='.$page.'&perpage='.$perpage;
-        //   	echo '<div class="checklistimportexport">';
+        //  echo '<div class="checklistimportexport">';
 		//	echo '<a href="'.$exporturl.'">'.get_string('classbookexportlnk', 'checklist').'</a>';
         //	echo '</div>';
 		}

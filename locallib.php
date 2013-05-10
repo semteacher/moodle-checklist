@@ -2880,7 +2880,7 @@ class checklist_class {
                         //TDMU-01-1 detail email 
                         //TODO - add mod_form param and additional condition
                         if ($updategrades){
-                            checklist_details_email($this->checklist, $item, $this->userid);
+                            checklist_details_email($this->checklist, $newcheck, $this->userid);
                         }
                     }
                 }
@@ -3011,6 +3011,9 @@ class checklist_class {
 
                     $DB->insert_record('checklist_check', $newcheck);
                     $updategrades = true;
+                        if ($updategrades){
+                            checklist_details_email($this->checklist, $newcheck, $userid);
+                        }
 
                 } else if ($currentchecks[$itemid]->teachermark != $val) {
                     if ($teachermarklocked && $currentchecks[$itemid]->teachermark == CHECKLIST_TEACHERMARK_YES) {
@@ -3025,6 +3028,9 @@ class checklist_class {
 
                     $DB->update_record('checklist_check', $updcheck);
                     $updategrades = true;
+                        if ($updategrades){
+                            checklist_details_email($this->checklist, $currentchecks, $userid);
+                        }
                 }
             }
             if ($updategrades) {

@@ -100,6 +100,12 @@ $string['edititem'] = 'Редактировать это пункт';
 $string['emaildetails'] = 'Отправлять email при любом изменении отметок в контрольном списке:';
 $string['emaildetails_help'] = 'При любом изменении отметки в контрольном списке, может быть отправлен email с подтверджениями: студентам, которые выполнили его, всем преподавателям на курсе или им обом.<br />
 Администратор может управлять тем, кто будет получать эти сообщения с помощью свойства \'mod:checklist/emaildetails\' - по-умолчанию, все преподаватели (в том числе и без права редактрования) могут получать эти сообщения.';
+$string['emaildetailssubject'] = 'Checklist \'{$a->checklist}\' item value was changed for a user {$a->user}';
+$string['emaildetailssubjectown'] = 'You have change in checklist \'{$a->checklist}\' item value';
+$string['emaildetailsbody'] = 'User {$a->user}. An item \'{$a->itemname}\' was changed for the checklist \'{$a->checklist}\' in the course \'{$a->coursename}\'. New value is \'{$a->itemvalue}\' 
+View the checklist here:';
+$string['emaildetailsbodyown'] = 'An item \'{$a->itemname}\' was changed for the checklist \'{$a->checklist}\' in the course \'{$a->coursename}\'. New value is \'{$a->itemvalue}\'  
+View the checklist here:';
 
 $string['emailoncomplete'] = 'Отправлять email когда контрольный список выполнен:';
 $string['emailoncomplete_help'] = 'Когда контрольный список выполнен, может быть отправлен email с подтверджениями: студентам, которые выполнили его, всем преподавателям на курсе или им обом.<br />

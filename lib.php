@@ -418,9 +418,6 @@ function checklist_details_email($checklist, $checkitem, $userid=0) {
                               '', 'id, grouping, displaytext');
     if (!$items) {
         return;
-    } else {
-//        $itemsarr= array();
-//        list($itemsarr)= $items;   
     }
     if (!$course = $DB->get_record('course', array('id' => $checklist->course) )) {
         return;
@@ -436,48 +433,56 @@ function checklist_details_email($checklist, $checkitem, $userid=0) {
             $context = context_module::instance($cm->id);
         }
     }
-    
-                    ///$user_stud = $DB->get_record('user', array('id'=>$userid), 'id, firstname, lastname');
+
     $user_stud = $DB->get_record('user', array('id' => $userid) );
-                    //prepare email content
-                    $details = new stdClass();
-                    $details->user = fullname($user_stud);
-                    $details->checklist = s($checklist->name);
-                    $details->coursename = $course->fullname;
-                    
-                    
-    $teachermarkmsg = array(CHECKLIST_TEACHERMARK_UNDECIDED => get_string('teachermarkundecided','checklist'),
-                            CHECKLIST_TEACHERMARK_YES => get_string('teachermarkyes','checklist'),
-                            CHECKLIST_TEACHERMARK_NO => get_string('teachermarkno','checklist'));                
-                    
-    $details->itemvalue = $teachermarkmsg[$newcheck->teachermark];
+    //prepare email content
+    $details = new stdClass();
+    $details->user = fullname($user_stud);
+    $details->checklist = s($checklist->name);
+    $details->coursename = $course->fullname;
     
-    $details->itemname = $items[$checkitem->item]->displaytext;//TODO ?
+    //set email message: text mark notification
+    switch ($checkitem->teachermark) {
+        case CHECKLIST_TEACHERMARK_YES:
+            $details->itemvalue = get_string('teachermarkyes','checklist');
+            break;
+
+        case CHECKLIST_TEACHERMARK_NO:
+            $details->itemvalue = get_string('teachermarkno','checklist');
+            break;
+
+        default:
+            $details->itemvalue = get_string('teachermarkundecided','checklist');
+            break;
+    }
+    
+    //set email message: text mark notification
+    foreach ($items as $itemid => $val) {
+        if ($itemid == $checkitem->item) {
+            $details->itemname = $val->displaytext;
+        }    
+    }
                     
-                    if ($checklist->emaildetails == CHECKLIST_EMAIL_TEACHER || $checklist->emaildetails == CHECKLIST_EMAIL_BOTH) {
-                        //email will be sended to the all teachers who have capability
-                        $subj = get_string('emaildetailssubject', 'checklist', $details);
-                        $content = get_string('emaildetailsbody', 'checklist', $details);
-                        //$content .= "Changed item: ".s($items[$checkitem->item]->displaytext)." ";
-                        $content .= new moodle_url('/mod/checklst/view.php', array('id' => $cm->id));
+    if ($checklist->emaildetails == CHECKLIST_EMAIL_TEACHER || $checklist->emaildetails == CHECKLIST_EMAIL_BOTH) {
+        //email will be sended to the all teachers who have capability
+        $subj = get_string('emaildetailssubject', 'checklist', $details);
+        $content = get_string('emaildetailsbody', 'checklist', $details);
+        $content .= new moodle_url('/mod/checklst/view.php', array('id' => $cm->id));
 
-                        if ($recipients = get_users_by_capability($context, 'mod/checklist:emailoncomplete', 'u.*', '', '', '', '', '', false)) {
-                            foreach ($recipients as $recipient) {                                
-                                email_to_user($recipient, $user_stud, $subj, $content, '', '', '', false);
-                            }
-                        }
-                    }
-                    if ($checklist->emaildetails == CHECKLIST_EMAIL_STUDENT || $checklist->emaildetails == CHECKLIST_EMAIL_BOTH) {
-                        //email will be sended to the student who complete this checklist
-                        $subj = get_string('emaildetailssubjectown', 'checklist', $details);
-                        $content = get_string('emaildetailsbodyown', 'checklist', $details);
-                        //$content .= "Changed item: ".s($items[$checkitem->item]->displaytext)." ";
-                        $content .= new moodle_url('/mod/checklst/view.php', array('id' => $cm->id));
+        if ($recipients = get_users_by_capability($context, 'mod/checklist:emailoncomplete', 'u.*', '', '', '', '', '', false)) {
+            foreach ($recipients as $recipient) {                                
+                email_to_user($recipient, $user_stud, $subj, $content, '', '', '', false);
+            }
+        }
+    }
+    if ($checklist->emaildetails == CHECKLIST_EMAIL_STUDENT || $checklist->emaildetails == CHECKLIST_EMAIL_BOTH) {
+        //email will be sended to the student who complete this checklist
+        $subj = get_string('emaildetailssubjectown', 'checklist', $details);
+        $content = get_string('emaildetailsbodyown', 'checklist', $details);
+        $content .= new moodle_url('/mod/checklst/view.php', array('id' => $cm->id));
 
-                        ///$recipient_stud = $DB->get_record('user', array('id' => $userid) );
-                        ///email_to_user($recipient_stud, $user_stud, $subj, $content, '', '', '', false);
-                        email_to_user($user_stud, $user_stud, $subj, $content, '', '', '', false);
-                    }
+        email_to_user($user_stud, $user_stud, $subj, $content, '', '', '', false);
+    }
         
 }
 

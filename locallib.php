@@ -3022,6 +3022,7 @@ class checklist_class {
 
                     $updcheck = new stdClass;
                     $updcheck->id = $currentchecks[$itemid]->id;
+                    $updcheck->item = $itemid;  //TDMU-01 : need to detail email
                     $updcheck->teachermark = $val;
                     $updcheck->teachertimestamp = time();
                     $updcheck->teacherid = $USER->id;
@@ -3029,7 +3030,7 @@ class checklist_class {
                     $DB->update_record('checklist_check', $updcheck);
                     $updategrades = true;
                         if ($updategrades && !$this->checklist->emaildetails==CHECKLIST_EMAIL_NO){
-                            checklist_details_email($this->checklist, $currentchecks, $userid);
+                            checklist_details_email($this->checklist, $updcheck, $userid);
                         }
                 }
             }

@@ -108,7 +108,18 @@ $capabilities = array(
             'teacher' => CAP_ALLOW
         )
     ),
-
+    
+    // Will receive a detail emails on the each checklist item state changed (if checklist is set to do so)
+    'mod/checklist:emaildetails' => array(
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => array(
+            'editingteacher' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW
+        )
+    ),
+    
     // Can update teacher checklist marks even if locked
     'mod/checklist:updatelocked' => array(
         'captype' => 'write',

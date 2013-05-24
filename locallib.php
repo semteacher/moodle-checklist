@@ -3939,6 +3939,11 @@ class checklist_class {
                             $newcheck->userid = $this->userid;
                             $newcheck->id = $DB->insert_record('checklist_check', $newcheck);
                         }
+                        //TDMU-01-1 detail email 
+                        //TODO - add mod_form param and additional condition
+                        if ($updategrades && !$this->checklist->emaildetails==CHECKLIST_EMAIL_NO){
+                            checklist_details_email($this->checklist, $newcheck, $this->userid);
+                        }
                     }
                 }
             }
@@ -4183,6 +4188,9 @@ class checklist_class {
 
                     $DB->insert_record('checklist_check', $newcheck);
                     $updategrades = true;
+                        if ($updategrades && !$this->checklist->emaildetails==CHECKLIST_EMAIL_NO){
+                            checklist_details_email($this->checklist, $newcheck, $userid);
+                        }
 
                 } else if ($currentchecks[$itemid]->teachermark != $val) {
                     if ($teachermarklocked && $currentchecks[$itemid]->teachermark == CHECKLIST_TEACHERMARK_YES) {
@@ -4191,12 +4199,16 @@ class checklist_class {
 
                     $updcheck = new stdClass;
                     $updcheck->id = $currentchecks[$itemid]->id;
+                    $updcheck->item = $itemid;  //TDMU-01 : need to detail email
                     $updcheck->teachermark = $val;
                     $updcheck->teachertimestamp = time();
                     $updcheck->teacherid = $USER->id;
 
                     $DB->update_record('checklist_check', $updcheck);
                     $updategrades = true;
+                        if ($updategrades && !$this->checklist->emaildetails==CHECKLIST_EMAIL_NO){
+                            checklist_details_email($this->checklist, $updcheck, $userid);
+                        }
                 }
             }
             if ($updategrades) {

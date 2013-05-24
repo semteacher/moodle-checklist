@@ -60,6 +60,7 @@ $string['pluginadministration'] = 'Checklist administration';
 $string['checklist:addinstance'] = 'Add a new checklist';
 $string['checklist:edit'] = 'Create and edit checklists';
 $string['checklist:emailoncomplete'] = 'Receive completion emails';
+$string['checklist:emaildetails'] = 'Receive detail emails on each cheklist item chages';
 $string['checklist:preview'] = 'Preview a checklist';
 $string['checklist:updatelocked'] = 'Update locked checklist marks';
 $string['checklist:updateother'] = 'Update students\' checklist marks';
@@ -107,6 +108,16 @@ $string['editchecks'] = 'Edit checks';
 $string['editdatesstart'] = 'Edit dates';
 $string['editdatesstop'] = 'Stop editing dates';
 $string['edititem'] = 'Edit this item';
+
+$string['emaildetails'] = 'Email on the each checklist item state changed:';
+$string['emaildetails_help'] = 'When anyone of the checklist item state are changed, a notification email can be sent: to the student who completed it, to all the teachers on the course or to both.<br />
+An administrator can control who receives this email using the capability \'mod:checklist/emaildetails\' - by default all teachers and non-editing teachers have this capability.';
+$string['emaildetailssubject'] = 'Checklist \'{$a->checklist}\' item value was changed for a user {$a->user}';
+$string['emaildetailssubjectown'] = 'You have change in checklist \'{$a->checklist}\' item value';
+$string['emaildetailsbody'] = 'User {$a->user}. An item \'{$a->itemname}\' was changed for the checklist \'{$a->checklist}\' in the course \'{$a->coursename}\'. New value is \'{$a->itemvalue}\' 
+View the checklist here:';
+$string['emaildetailsbodyown'] = 'An item \'{$a->itemname}\' was changed for the checklist \'{$a->checklist}\' in the course \'{$a->coursename}\'. New value is \'{$a->itemvalue}\'  
+View the checklist here:';
 
 $string['emailoncomplete'] = 'Email when checklist is complete:';
 $string['emailoncomplete_help'] = 'When a checklist is complete, a notification email can be sent: to the student who completed it, to all the teachers on the course or to both.<br />

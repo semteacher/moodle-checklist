@@ -103,7 +103,12 @@ class mod_checklist_mod_form extends moodleform_mod {
         $mform->addElement('select', 'emailoncomplete', get_string('emailoncomplete', 'checklist'), $emailrecipients);
         $mform->setDefault('emailoncomplete', 0);
         $mform->addHelpButton('emailoncomplete', 'emailoncomplete', 'checklist');
-
+        
+        $mform->addElement('select', 'emaildetails', get_string('emaildetails', 'checklist'), $emailrecipients);
+        $mform->setDefault('emaildetails', 0);
+        $mform->disabledIf('emaildetails', 'emailoncomplete', 'eq', 0);
+        $mform->addHelpButton('emaildetails', 'emaildetails', 'checklist');
+        
         $autopopulateoptions = array (CHECKLIST_AUTOPOPULATE_NO => get_string('no'),
                                       CHECKLIST_AUTOPOPULATE_SECTION => get_string('importfromsection','checklist'),
                                       CHECKLIST_AUTOPOPULATE_COURSE => get_string('importfromcourse', 'checklist'));

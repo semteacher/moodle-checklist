@@ -48,7 +48,7 @@ class mod_checklist_mod_form extends moodleform_mod {
 
     function definition() {
 
-        global $CFG;
+        global $COURSE, $CFG;
         $mform =& $this->_form;
 
 //-------------------------------------------------------------------------------

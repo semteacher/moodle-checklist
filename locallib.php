@@ -1972,7 +1972,7 @@ class checklist_class {
                                 $sely = ($teachermark == CHECKLIST_TEACHERMARK_YES) ? 'selected="selected" ' : '';
                                 $seln = ($teachermark == CHECKLIST_TEACHERMARK_NO) ? 'selected="selected" ' : '';
 
-                                $img = '<select name="items_'.$userid.'['.$checkid.']" '.$disabled.' class="tablecol_'.$key.'">';//TDMU: aded class name wich contain column numer
+                                $img = '<select name="items_'.$userid.'['.$checkid.']" '.$disabled.' class="tablecol_'.$colkey.'">';//TDMU: aded class name wich contain column numer
                                 $img .= '<option value="'.CHECKLIST_TEACHERMARK_UNDECIDED.'" '.$selu.'></option>';
                                 $img .= '<option value="'.CHECKLIST_TEACHERMARK_YES.'" '.$sely.'>'.get_string('yes').'</option>';
                                 $img .= '<option value="'.CHECKLIST_TEACHERMARK_NO.'" '.$seln.'>'.get_string('no').'</option>';

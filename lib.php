@@ -318,7 +318,11 @@ function checklist_update_grades($checklist, $userid=0) {
         list($isql, $iparams) = $DB->get_in_or_equal(array_keys($items));
 
         $sql = 'SELECT u.id AS userid, (SUM(CASE WHEN '.$where.' THEN 1 ELSE 0 END) * ? / ? ) AS rawgrade'.$date;
-        $sql .= ' , u.firstname, u.lastname ';
+        if ($CFG->version < 2013111800) {
+            $sql .= ' , u.firstname, u.lastname ';
+        } else {
+            $sql .= ' , '.get_all_user_name_fields(true, 'u');
+        }
         $sql .= ' FROM {user} u LEFT JOIN {checklist_check} c ON u.id = c.userid';
         $sql .= " WHERE u.id $usql";
         $sql .= " AND c.item $isql";
@@ -788,11 +792,21 @@ function checklist_cron () {
 function checklist_get_participants($checklistid) {
     global $DB;
 
-    $sql = 'SELECT DISTINCT u.id, u.id FROM {user} u, {checklist_item} i, {checklist_check} c ';
-    $sql .= 'WHERE i.checklist = ? AND ((c.item = i.id AND c.userid = u.id) OR (i.userid = u.id))';
-    $return = $DB->get_records_sql($sql, array($checklistid));
+    $params = array($checklistid);
+    $sql = 'SELECT DISTINCT u.id
+              FROM {user} u
+              JOIN {checklist_item} i ON i.userid = u.id
+             WHERE i.checklist = ?';
+    $userids1 = $DB->get_records_sql($sql, $params);
 
-    return $return;
+    $sql = 'SELECT DISTINCT u.id
+              FROM {user} u
+              JOIN {checklist_check} c ON c.userid = u.id
+              JOIN {checklist_item} i ON i.id = c.item
+             WHERE i.checklist = ?';
+    $userids2 = $DB->get_records_sql($sql, $params);
+
+    return $userids1 + $userids2;
 }
 
 /**

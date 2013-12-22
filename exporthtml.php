@@ -6,9 +6,9 @@
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
+global $DB, $PAGE, $CFG;
     
 $id = required_param('id', PARAM_INT); // course module id
-
 $page = optional_param('page', 0, PARAM_INT);
 $perpage = optional_param('perpage', 30, PARAM_INT);
 $sortby = optional_param('sortby', '', PARAM_TEXT);

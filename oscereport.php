@@ -13,7 +13,7 @@ require_once(dirname(__FILE__).'/locallib.php');
 
 global $DB, $PAGE;
 
-$id = required_param('id', 0, PARAM_INT); // course_module ID, or
+$id = required_param('id', PARAM_INT); // course_module ID, or
 $checklistid  = optional_param('checklist', 0, PARAM_INT);  // checklist instance ID
 $studentid = optional_param('studentid', false, PARAM_INT);
 

@@ -2773,7 +2773,7 @@ class checklist_class {
             } else {
                 $fields = get_all_user_name_fields(true, 'u');
             }
-            $ausers = $DB->get_records_sql('SELECT u.id, $fields FROM {user} u WHERE u.id '.$usql.' ORDER BY '.$orderby, $uparams);
+            $ausers = $DB->get_records_sql("SELECT u.id, $fields FROM {user} u WHERE u.id ".$usql.' ORDER BY '.$orderby, $uparams);
             //$ausers = $DB->get_records_sql('SELECT u.id, u.firstname, u.lastname FROM {user} u WHERE u.id '.$usql.' ORDER BY '.$orderby, $uparams);
         }
 

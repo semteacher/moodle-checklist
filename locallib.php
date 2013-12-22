@@ -1405,7 +1405,10 @@ class checklist_class {
 //        $editcomments = false;
         $thispage = new moodle_url('/mod/checklist/osceview.php', array('id' => $this->cm->id) );
 
-        $teachermarklocked = false;		
+        $teachermarklocked = false;
+		$strteachername = '';
+        $struserdate = '';
+        $strteacherdate = '';
         if ($viewother) {
             //TDMU-02: comments disabled
             /*
@@ -1465,7 +1468,13 @@ class checklist_class {
                         $osceteacherids[$item->osceteacherid] = $item->osceteacherid;
                     }
                 }
-                $osceteachers = $DB->get_records_list('user', 'id', $osceteacherids, '', 'id, firstname, lastname');
+                if ($CFG->version < 2013111800) {
+                    $fields = 'firstname, lastname';
+                } else {
+                    $fields = get_all_user_name_fields(true);
+                }
+                $osceteachers = $DB->get_records_list('user', 'id', $osceteacherids, '', 'id, '.$fields);
+                //$osceteachers = $DB->get_records_list('user', 'id', $osceteacherids, '', 'id, firstname, lastname');
                 foreach ($this->items as $item) {
                     if (isset($osceteachers[$item->osceteacherid])) {
                         $item->osceteachername = fullname($osceteachers[$item->osceteacherid]);
@@ -1596,7 +1605,7 @@ class checklist_class {
                     echo '</ol>';
                 }
                 $itemname = '"item'.$item->id.'"';
-                $checked = (($updateform || $viewother || $userreport) && $item->oscemark != CHECKLIST_OSCE_UNDECIDED) ? ' checked="checked" ' : '';
+                $checked = (($updateform || $viewother || $userreport) && $item->oscemark !== CHECKLIST_OSCE_UNDECIDED) ? ' checked="checked" ' : '';//TDMU-2013-12-22??
                 if ($viewother || $userreport) {
                     $checked .= ' disabled="disabled" ';
                 } else if (!$overrideauto && $item->moduleid) {
@@ -1621,7 +1630,7 @@ class checklist_class {
 
                 if ($item->itemoptional == CHECKLIST_OPTIONAL_HEADING) {
                     $optional = ' class="itemheading '.$itemcolour.'" ';
-                    $spacerimg = $OUTPUT->pix_url('check_spacer','checklist');
+                    //$spacerimg = $OUTPUT->pix_url('check_spacer','checklist');
                 } else if ($item->itemoptional == CHECKLIST_OPTIONAL_YES) {
                     $optional = ' class="itemoptional '.$itemcolour.'" ';
                     $checkclass = ' itemoptional';
@@ -1636,7 +1645,7 @@ class checklist_class {
                         //echo '<img src="'.$spacerimg.'" alt="" title="" />';
                     } else {
                         if ($viewother) {
-                            $disabled = ($teachermarklocked && $item->teachermark != CHECKLIST_OSCE_UNDECIDED) ? 'disabled="disabled" ' : '';//2.0
+                            $disabled = ($teachermarklocked && $item->teachermark !== CHECKLIST_OSCE_UNDECIDED) ? 'disabled="disabled" ' : '';//2.0 //TDMU 2013-12-22
 
                             $selu = ($item->oscemark == CHECKLIST_OSCE_UNDECIDED) ? 'selected="selected" ' : '';
                             $self = ($item->oscemark == CHECKLIST_OSCE_FULL) ? 'selected="selected" ' : '';
@@ -1656,9 +1665,10 @@ class checklist_class {
                     }
                 }
                 if ($showcheckbox) {
-                    if ($item->itemoptional == CHECKLIST_OPTIONAL_HEADING) {
+                    //if ($item->itemoptional == CHECKLIST_OPTIONAL_HEADING) {
+                    if ($item->itemoptional !== CHECKLIST_OPTIONAL_HEADING) {
                         //echo '<img src="'.$spacerimg.'" alt="" title="" />';
-                    } else {
+                  //  } else {
                         echo '<input class="checklistitem'.$checkclass.'" type="checkbox" name="items[]" id='.$itemname.$checked.' value="'.$item->id.'" />';
                     }
                 }
@@ -1691,8 +1701,8 @@ class checklist_class {
                 //TDMU-02 - end block
                 
                 if ($showcompletiondates) {
-                    if ($item->itemoptional != CHECKLIST_OPTIONAL_HEADING) {
-                        if ($showteachermark && $item->oscemark != CHECKLIST_OSCE_UNDECIDED && $item->oscetimestamp) {
+                    if ($item->itemoptional !== CHECKLIST_OPTIONAL_HEADING) {
+                        if ($showteachermark && $item->oscemark !== CHECKLIST_OSCE_UNDECIDED && $item->oscetimestamp) {
                             if ($item->osceteachername) {
                                 echo '<span class="itemteachername" title="'.$strteachername.'">'.get_string('teacherwhomarkosce','checklist').'<a href="'.$CFG->wwwroot.'/user/view.php?id='.$item->osceteacherid.'&amp;course='.$this->course->id.'">'.$item->osceteachername.'</a></span>';//@TDMU-02 - osceteachername work as url
                             }
@@ -2758,7 +2768,13 @@ class checklist_class {
             $users = array_slice($users, $page*$perpage, $perpage);
 
             list($usql, $uparams) = $DB->get_in_or_equal($users);
-            $ausers = $DB->get_records_sql('SELECT u.id, u.firstname, u.lastname FROM {user} u WHERE u.id '.$usql.' ORDER BY '.$orderby, $uparams);
+            if ($CFG->version < 2013111800) {
+                $fields = 'u.firstname, u.lastname';
+            } else {
+                $fields = get_all_user_name_fields(true, 'u');
+            }
+            $ausers = $DB->get_records_sql('SELECT u.id, $fields FROM {user} u WHERE u.id '.$usql.' ORDER BY '.$orderby, $uparams);
+            //$ausers = $DB->get_records_sql('SELECT u.id, u.firstname, u.lastname FROM {user} u WHERE u.id '.$usql.' ORDER BY '.$orderby, $uparams);
         }
 
         //if ($editchecks) {
@@ -2937,7 +2953,12 @@ class checklist_class {
 	//TDMU - end block - end select row for bulk change checks for visible students
 
         // Output the data
-        $tickimg = '<img src="'.$OUTPUT->pix_url('/i/tick_green_big').'" alt="'.get_string('itemcomplete','checklist').'" />';
+        //$tickimg = '<img src="'.$OUTPUT->pix_url('/i/tick_green_big').'" alt="'.get_string('itemcomplete','checklist').'" />';
+        if ($CFG->version < 2013111800) {
+            $tickimg = '<img src="'.$OUTPUT->pix_url('i/tick_green_big').'" alt="'.get_string('itemcomplete','checklist').'" />';
+        } else {
+            $tickimg = '<img src="'.$OUTPUT->pix_url('i/grade_correct').'" alt="'.get_string('itemcomplete','checklist').'" />';
+        }
         $teacherimg = array(CHECKLIST_OSCE_UNDECIDED => '<img src="'.$OUTPUT->pix_url('empty_box','checklist').'" alt="'.get_string('oscemarkundecided','checklist').'" />',
                             CHECKLIST_OSCE_FULL => '<img src="'.$OUTPUT->pix_url('osce_full','checklist').'" alt="'.get_string('oscemarkfullalt','checklist').'" />',
 							CHECKLIST_OSCE_HALF => '<img src="'.$OUTPUT->pix_url('osce_half','checklist').'" alt="'.get_string('oscemarkyhalfalt','checklist').'" />',

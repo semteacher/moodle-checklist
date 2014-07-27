@@ -2006,7 +2006,12 @@ class checklist_class {
             	if ($key == $lastkey) {
                 	$levelclass .= ' lastcol';
             	}
-            	$output .= '<td style=" text-align: center; width:'.$size.'" class="header c'.$key.$levelclass.'" scope="col">';
+                
+                $colspan = '';
+                if ($key == 0  && $editchecks) {
+                    $colspan = 'colspan="2"';
+                }
+            	$output .= '<td '.$colspan.' style=" text-align: center; width:'.$size.'" class="header c'.$key.$levelclass.'" scope="col">';
 		   		if ($key!=0) {
                     $disabled = ($teachermarklocked && $teachermark == CHECKLIST_TEACHERMARK_YES) ? 'disabled="disabled" ' : '';
 

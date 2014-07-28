@@ -1990,45 +1990,9 @@ class checklist_class {
         }
         $output .= '</tr>';
 
-        // TODO:reimplement! if we are in editing mode, run the add_row function that adds the button and necessary code to the document 
-        //if ($editchecks) { 
-        //    $output .= $this->report_add_toggle_button_row($table); 
-        //}
-		//TDMU - 01 : start block - show select row for bulk change checks for visible students
-		if ($editchecks) {
-			$output .= '<tr>';		
-        	foreach ($table->head as $key => $heading) {
-            	if ($table->skip[$key]) {
-                	continue;
-            	}
-            	$size = $table->size[$key];
-            	$levelclass = ' head'.$table->level[$key];
-            	if ($key == $lastkey) {
-                	$levelclass .= ' lastcol';
-            	}
-                
-                $colspan = '';
-                if ($key == 0  && $editchecks) {
-                    $colspan = 'colspan="2"';
-                }
-            	$output .= '<td '.$colspan.' style=" text-align: center; width:'.$size.'" class="header c'.$key.$levelclass.'" scope="col">';
-		   		if ($key!=0) {
-                    $disabled = ($teachermarklocked && $teachermark == CHECKLIST_TEACHERMARK_YES) ? 'disabled="disabled" ' : '';
-
-                    $img1 = '<select name="bulk_selector_tablecol'.$key.'" '.$disabled.' class="tablecol_'.$key.'" onChange="bulk_select(this);">';//TDMU - class identifi aded there
-                    $img1 .= '<option value="'.CHECKLIST_TEACHERMARK_UNDECIDED.'" selected="selected"></option>';
-                    $img1 .= '<option value="'.CHECKLIST_TEACHERMARK_YES.'">'.get_string('yes').'</option>';
-                    $img1 .= '<option value="'.CHECKLIST_TEACHERMARK_NO.'">'.get_string('no').'</option>';
-                    $img1 .= '</select>';
-					
-					$output .= '<div>'.get_string('putchecksforvisible','checklist').'</div>';
-		  			$output .= '<div>'.$img1.'</div>';
-		    	}
-		    	$output .= '</td>';
-        	}
-			$output .= '</tr>';
-		}
-        //TDMU - 01 : end block - end select row for bulk change checks for visible students
+        if ($editchecks) { 
+            $output .= $this->report_add_toggle_button_row($table); 
+        }
 
         // Output the data
         if ($CFG->version < 2013111800) {

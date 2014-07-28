@@ -117,6 +117,14 @@ $string['emailoncompletebody'] = 'Пользователь {$a->user} выпол
 $string['emailoncompletebodyown'] = 'Вы выполнили контрольный список \'{$a->checklist}\' в курсе \'{$a->coursename}\' 
 Просмотреть контрольный список можна здесь:';
 
+$string['eventchecklistcomplete'] = 'Контрольный список выполнен';
+$string['eventeditpageviewed'] = 'Страница редактирования открыта';
+$string['eventreportviewed'] = 'Просмотрен отчёт';
+$string['eventoscereportviewed'] = 'Просмотрен отчёт ОСКЭ/ОСПЭ';
+$string['eventstudentchecksupdated'] = 'Студент обновил отметки';
+$string['eventteacherchecksupdated'] = 'Преподаватель обновил отметки';
+$string['eventteacheroscemarksupdated'] = 'Преподаватель обновив оценки за ОСКЭ/ОСПЭ';
+
 $string['export'] = 'Экспортировать пункты';
 
 $string['forceupdate'] = 'Обновить отметки для всех автоматически созданных пунктов';

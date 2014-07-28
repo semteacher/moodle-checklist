@@ -132,8 +132,10 @@ View the checklist here:';
 $string['eventchecklistcomplete'] = 'Checklist complete';
 $string['eventeditpageviewed'] = 'Edit page viewed';
 $string['eventreportviewed'] = 'Report viewed';
+$string['eventoscereportviewed'] = 'OSCE Report viewed';
 $string['eventstudentchecksupdated'] = 'Student checks updated';
 $string['eventteacherchecksupdated'] = 'Teacher checks updated';
+$string['eventteacheroscemarksupdated'] = 'Teacher OSCE marks updated';
 
 $string['export'] = 'Export items';
 

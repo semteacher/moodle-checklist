@@ -605,7 +605,17 @@ class checklist_class {
 
         $this->view_tabs($currenttab);
 
-        add_to_log($this->course->id, 'checklist', 'view', "osceview.php?id={$this->cm->id}", $this->checklist->name, $this->cm->id);
+        if ($CFG->version > 2014051200) { // Moodle 2.7+
+            $params = array(
+                'contextid' => $this->context->id,
+                'objectid' => $this->checklist->id,
+            );
+            $event = \mod_checklist\event\course_module_osceviewed::create($params);
+            $event->trigger();
+        } else { // Before Moodle 2.7
+            add_to_log($this->course->id, 'checklist', 'view', "osceview.php?id={$this->cm->id}", $this->checklist->id, $this->cm->id);
+        }        
+        //add_to_log($this->course->id, 'checklist', 'view', "osceview.php?id={$this->cm->id}", $this->checklist->name, $this->cm->id);
 
         if ($this->canupdateown()) {
             $this->process_view_actions();
@@ -712,7 +722,7 @@ class checklist_class {
 
 	//TDMU-02 OSCE
 	function oscereport() {
-        global $OUTPUT;
+        global $OUTPUT, $CFG;
         
         if ((!$this->items) && $this->canedit()) { //create new items if no anyone available?
             redirect(new moodle_url('/mod/checklist/edit.php', array('id' => $this->cm->id)));
@@ -740,10 +750,28 @@ class checklist_class {
 
         $this->process_oscereport_actions();
 
+        if ($CFG->version > 2014051200) { // Moodle 2.7+
+            $params = array(
+                'contextid' => $this->context->id,
+                'objectid' => $this->checklist->id,
+            );
+            if ($this->userid) {
+                $params['relateduserid'] = $this->userid;
+            }
+            $event = \mod_checklist\event\oscereport_viewed::create($params);
+            $event->trigger();
+        } else { // Before Moodle 2.7
+            $url = "oscereport.php?id={$this->cm->id}";
+            if ($this->userid) {
+                $url .= "&studentid={$this->userid}";
+            }
+            add_to_log($this->course->id, "checklist", "osce report", $url, $this->checklist->id, $this->cm->id);
+        }
+        
         if ($this->userid) {//show single student osce marks
             $this->view_osceitems(true);
         } else {//show list of all osce marks
-            add_to_log($this->course->id, "checklist", "oscereport", "oscereport.php?id={$this->cm->id}", $this->checklist->name, $this->cm->id);
+//            add_to_log($this->course->id, "checklist", "oscereport", "oscereport.php?id={$this->cm->id}", $this->checklist->name, $this->cm->id);
             $this->view_oscereport();
         }
 
@@ -1456,7 +1484,7 @@ class checklist_class {
             }
             
             $info = $this->checklist->name.' ('.fullname($student, true).')';
-            add_to_log($this->course->id, "checklist", "report", "oscereport.php?id={$this->cm->id}&studentid={$this->userid}", $info, $this->cm->id);
+            //add_to_log($this->course->id, "checklist", "report", "oscereport.php?id={$this->cm->id}&studentid={$this->userid}", $info, $this->cm->id);
 
             echo '<h2>'.get_string('oscemarksfor','checklist').' '.fullname($student, true).'</h2>';
             echo '&nbsp;';
@@ -4153,8 +4181,20 @@ class checklist_class {
             if (!$student = $DB->get_record('user', array('id' => $this->userid))) {
                 error('No such user!');
             }            
-            $info = $this->checklist->name.' ('.fullname($student, true).')';
-            add_to_log($this->course->id, 'checklist', 'update osce marks', "oscereport.php?id={$this->cm->id}&studentid={$this->userid}", $info, $this->cm->id);
+            
+            
+            if ($CFG->version > 2014051200) { // Moodle 2.7+
+                $params = array(
+                    'contextid' => $this->context->id,
+                    'objectid' => $this->checklist->id,
+                    'relateduserid' => $this->userid,
+                );
+                $event = \mod_checklist\event\teacher_oscemarks_updated::create($params);
+                $event->trigger();
+            } else { // Before Moodle 2.7
+                $info = $this->checklist->name.' ('.fullname($student, true).')';
+                add_to_log($this->course->id, 'checklist', 'update osce marks', "oscereport.php?id={$this->cm->id}&studentid={$this->userid}", $info, $this->cm->id);
+            }
 
             $teachermarklocked = $this->checklist->lockteachermarks && !has_capability('mod/checklist:updatelocked', $this->context);
 

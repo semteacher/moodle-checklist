@@ -94,6 +94,7 @@ $string['completionpercentgroup'] = 'Require checked-off';
 $string['completionpercent'] = 'Percentage of items that should be checked-off:';
 
 $string['configchecklistautoupdate'] = 'Before allowing this you must make a few changes to the core Moodle code, please see mod/checklist/README.txt for details';
+$string['configshowupdateablemymoodle'] = 'If this is checked then only updatable Checklists will be shown from the \'My Moodle\' page';
 $string['configshowcompletemymoodle'] = 'If this is unchecked then completed Checklists will be hidden from the \'My Moodle\' page';
 $string['configshowmymoodle'] = 'If this is unchecked then Checklist activities (with progress bars) will no longer appear on the \'My Moodle\' page';
 
@@ -192,6 +193,7 @@ $string['savechecks'] = 'Save';
 
 $string['showcompletemymoodle'] = 'Show completed Checklists on \'My Moodle\' page';
 $string['showfulldetails'] = 'Show full details';
+$string['showupdateablemymoodle'] = 'Show only updatable Checklists on \'My Moodle\' page';
 $string['showmymoodle'] = 'Show Checklists on \'My Moodle\' page';
 $string['showprogressbars'] = 'Show progress bars';
 

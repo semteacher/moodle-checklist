@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the Checklist plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,10 +25,10 @@ class backup_checklist_activity_structure_step extends backup_activity_structure
 
     protected function define_structure() {
 
-        // To know if we are including userinfo
+        // To know if we are including userinfo.
         $userinfo = $this->get_setting_value('userinfo');
 
-        // Define each element separated
+        // Define each element separated.
 
         $checklist = new backup_nested_element('checklist', array('id'), array(
             'name', 'intro', 'introformat', 'timecreated', 'timemodified', 'useritemsallowed',
@@ -39,8 +38,10 @@ class backup_checklist_activity_structure_step extends backup_activity_structure
         $items = new backup_nested_element('items');
 
         $item = new backup_nested_element('item', array('id'),
-                                          array('userid', 'displaytext', 'position', 'indent',
-                                                'itemoptional', 'duetime', 'colour', 'moduleid', 'hidden'));
+                                          array(
+                                              'userid', 'displaytext', 'position', 'indent',
+                                              'itemoptional', 'duetime', 'colour', 'moduleid', 'hidden'
+                                          ));
 
         $checks = new backup_nested_element('checks');
 
@@ -50,9 +51,10 @@ class backup_checklist_activity_structure_step extends backup_activity_structure
         $comments = new backup_nested_element('comments');
 
         $comment = new backup_nested_element('comment', array('id'), array(
-            'userid', 'commentby', 'text'));
+            'userid', 'commentby', 'text'
+        ));
 
-        // Build the tree
+        // Build the tree.
         $checklist->add_child($items);
         $items->add_child($item);
 
@@ -62,7 +64,7 @@ class backup_checklist_activity_structure_step extends backup_activity_structure
         $item->add_child($comments);
         $comments->add_child($comment);
 
-        // Define sources
+        // Define sources.
         $checklist->set_source_table('checklist', array('id' => backup::VAR_ACTIVITYID));
 
         if ($userinfo) {
@@ -73,7 +75,7 @@ class backup_checklist_activity_structure_step extends backup_activity_structure
             $item->set_source_sql('SELECT * FROM {checklist_item} WHERE userid = 0 AND checklist = ?', array(backup::VAR_PARENTID));
         }
 
-        // Define id annotations
+        // Define id annotations.
         $item->annotate_ids('user', 'userid');
         $item->annotate_ids('course_modules', 'moduleid');
         $check->annotate_ids('user', 'userid');
@@ -81,11 +83,11 @@ class backup_checklist_activity_structure_step extends backup_activity_structure
         $comment->annotate_ids('user', 'userid');
         $comment->annotate_ids('user', 'commentby');
 
-        // Define file annotations
+        // Define file annotations.
 
-        $checklist->annotate_files('mod_checklist', 'intro', null); // This file area hasn't itemid
+        $checklist->annotate_files('mod_checklist', 'intro', null); // This file area hasn't itemid.
 
-        // Return the root element (forum), wrapped into standard activity structure
+        // Return the root element (forum), wrapped into standard activity structure.
         return $this->prepare_activity_structure($checklist);
     }
 

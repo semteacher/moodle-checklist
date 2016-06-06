@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the Checklist plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -34,9 +33,9 @@ To remove the automatic items from the list, change this option back to \'No\', 
 $string['autoupdate'] = 'Check-off when modules complete';
 $string['autoupdate_help'] = 'This will automatically check-off items in your checklist when you complete the relevant activity in the course.<br />
 \'Completing\' an activity varies from one activity to another - \'view\' a resource, \'submit\' a quiz or assignment, \'post\' to a forum or join in with a chat, etc.<br />
-If a Moodle 2.0 completion tracking is switched on for a particular activity, that will be used to tick-off the item in the list<br />
+If completion tracking is switched on for a particular activity, that will be used to tick-off the item in the list<br />
 For details of exactly what causes an activity to be marked as \'complete\', ask your site administrator to look in the file \'mod/checklist/autoupdate.php\'<br />
-Note: it can take up to 60 seconds for a student\'s activity to be reflected in their checklist';
+Note: it can take a short while for a student\'s activity to be reflected in their checklist (when using completion tracking)';
 $string['autoupdatenote'] = 'It is the \'student\' mark that is automatically updated - no updates will be displayed for \'Teacher only\' checklists';
 
 $string['autoupdatewarning_both'] = 'There are items on this list that will be automatically updated (as students complete the related activity). However, as this is a \'student and teacher\' checklist the progress bars will not update until a teacher agrees the marks given.';
@@ -182,7 +181,7 @@ $string['putchecksforvisible'] = 'For all shown students:';//@TDMU-01 title for 
 
 $string['removeauto'] = 'Remove course module items';
 
-$string['report'] = 'View Progress';
+$string['report'] = 'View progress';
 $string['reporttablesummary'] = 'Table showing the items on the checklist that each student has completed';
 
 $string['requireditem'] = 'This item is required - it must be completed';
@@ -193,6 +192,7 @@ $string['savechecks'] = 'Save';
 
 $string['showcompletemymoodle'] = 'Show completed Checklists on \'My Moodle\' page';
 $string['showfulldetails'] = 'Show full details';
+$string['showhidechecked'] = 'Show/hide selected items';
 $string['showupdateablemymoodle'] = 'Show only updatable Checklists on \'My Moodle\' page';
 $string['showmymoodle'] = 'Show Checklists on \'My Moodle\' page';
 $string['showprogressbars'] = 'Show progress bars';
